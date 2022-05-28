@@ -1,0 +1,161 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><title>Run Ubuntu in QEMU on MacOS (Apple Silicon) - Adonis's Blog</title><meta name=renderer content="webkit"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv=cache-control content="no-transform"><meta http-equiv=cache-control content="no-siteapp"><meta name=theme-color content="#f8f5ec"><meta name=msapplication-navbutton-color content="#f8f5ec"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec"><meta name=author content="Adonis Ling"><meta name=description content="A guide to run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta name=keywords content="Hugo,theme,even"><meta name=generator content="Hugo 0.99.1 with theme even"><link rel=canonical href=https://adonis0147.github.io/post/qemu-macos-apple-silicon/><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=manifest href=/manifest.json><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><link href=/sass/main.min.b5a744db6de49a86cadafb3b70f555ab443f83c307a483402259e94726b045ff.css rel=stylesheet><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin=anonymous><meta property="og:title" content="Run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta property="og:description" content="A guide to run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta property="og:type" content="article"><meta property="og:url" content="https://adonis0147.github.io/post/qemu-macos-apple-silicon/"><meta property="article:section" content="post"><meta property="article:published_time" content="2022-05-28T11:48:49+08:00"><meta property="article:modified_time" content="2022-05-28T11:48:49+08:00"><meta itemprop=name content="Run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta itemprop=description content="A guide to run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta itemprop=datePublished content="2022-05-28T11:48:49+08:00"><meta itemprop=dateModified content="2022-05-28T11:48:49+08:00"><meta itemprop=wordCount content="440"><meta itemprop=keywords content="QEMU,MacOS,Apple Silicon,VDE,VDE_VMNET,M1,"><meta name=twitter:card content="summary"><meta name=twitter:title content="Run Ubuntu in QEMU on MacOS (Apple Silicon)"><meta name=twitter:description content="A guide to run Ubuntu in QEMU on MacOS (Apple Silicon)"><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]--></head><body><div id=mobile-navbar class=mobile-navbar><div class=mobile-header-logo><a href=/ class=logo>Adonis's Blog</a></div><div class=mobile-navbar-icon><span></span>
+<span></span>
+<span></span></div></div><nav id=mobile-menu class="mobile-menu slideout-menu"><ul class=mobile-menu-list><a href=/><li class=mobile-menu-item>Home</li></a><a href=/post/><li class=mobile-menu-item>Archives</li></a><a href=/tags/><li class=mobile-menu-item>Tags</li></a><a href=/categories/><li class=mobile-menu-item>Categories</li></a></ul></nav><div class=container id=mobile-panel><header id=header class=header><div class=logo-wrapper><a href=/ class=logo>Adonis's Blog</a></div><nav class=site-navbar><ul id=menu class=menu><li class=menu-item><a class=menu-item-link href=/>Home</a></li><li class=menu-item><a class=menu-item-link href=/post/>Archives</a></li><li class=menu-item><a class=menu-item-link href=/tags/>Tags</a></li><li class=menu-item><a class=menu-item-link href=/categories/>Categories</a></li></ul></nav></header><main id=main class=main><div class=content-wrapper><div id=content class=content><article class=post><header class=post-header><h1 class=post-title>Run Ubuntu in QEMU on MacOS (Apple Silicon)</h1><div class=post-meta><span class=post-time>2022-05-28</span><div class=post-category><a href=/categories/english/>English</a></div></div></header><div class=post-toc id=post-toc><h2 class=post-toc-title>Contents</h2><div class="post-toc-content always-active"><nav id=TableOfContents><ul><li><a href=#prerequisite>Prerequisite</a><ul><li><a href=#preparation>Preparation</a></li><li><a href=#test>Test</a></li></ul></li><li><a href=#install-ubuntu>Install Ubuntu</a><ul><li><a href=#download-qemu-efi>Download QEMU EFI.</a></li><li><a href=#create-an-image>Create an image.</a></li><li><a href=#boot-qemu-to-install-ubuntu>Boot QEMU to install Ubuntu</a></li></ul></li><li><a href=#boot-ubuntu-in-qemu>Boot Ubuntu in QEMU</a><ul><li><a href=#test-1>Test</a></li></ul></li><li><a href=#configure-the-networking>Configure the networking</a></li><li><a href=#log-into-the-server-by-ssh>Log into the server by SSH</a></li></ul></nav></div></div><div class=post-content><p>This post is a guide to run Ubuntu in QEMU on MacOS (Apple Silicon).</p><p>The laptop in this post is <code>MacBook Pro (13-inch, M1, 2020)</code>.</p><p>The OS is <code>MacOS 12.4 21F79 arm64</code>.</p><h1 id=prerequisite>Prerequisite</h1><ol><li>ubuntu-22.04-live-server-arm64.iso</li><li>QEMU >= 7.0</li><li><a href=https://github.com/lima-vm/vde_vmnet>vde_vmnet</a> >= v0.6.0</li><li>MacOS >= Monterey (Apple Silicon)</li></ol><h2 id=preparation>Preparation</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Download the Ubuntu live cd from the official website.</span>
+</span></span><span class=line><span class=cl><span class=c1># https://ubuntu.com/download/server/arm</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Install QEMU by Homebrew.</span>
+</span></span><span class=line><span class=cl>brew install qemu
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Install vde_vmnet.</span>
+</span></span><span class=line><span class=cl>git clone https://github.com/lima-vm/vde_vmnet
+</span></span><span class=line><span class=cl><span class=nb>cd</span> vde_vmnet
+</span></span><span class=line><span class=cl>git config --global --add safe.directory <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>sudo make <span class=nv>PREFIX</span><span class=o>=</span>/opt/vde install
+</span></span></code></pre></td></tr></table></div></div><h2 id=test>Test</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>ping 192.168.105.1
+</span></span></code></pre></td></tr></table></div></div><p>If the test is failed, try to reload the launch plists manually to make sure the processes (<code>vde_switch</code> and <code>vde_vmnet</code>) are running.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Unload</span>
+</span></span><span class=line><span class=cl>sudo launchctl unload -w <span class=s2>&#34;/Library/LaunchDaemons/io.github.lima-vm.vde_vmnet.plist&#34;</span>
+</span></span><span class=line><span class=cl>sudo launchctl unload -w <span class=s2>&#34;/Library/LaunchDaemons/io.github.virtualsquare.vde-2.vde_switch.plist&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Load (order matters)</span>
+</span></span><span class=line><span class=cl>sudo launchctl load -w <span class=s2>&#34;/Library/LaunchDaemons/io.github.virtualsquare.vde-2.vde_switch.plist&#34;</span>
+</span></span><span class=line><span class=cl>sudo launchctl load -w <span class=s2>&#34;/Library/LaunchDaemons/io.github.lima-vm.vde_vmnet.plist&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=install-ubuntu>Install Ubuntu</h1><h2 id=download-qemu-efi>Download QEMU EFI.</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>curl -L https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd -o QEMU_EFI.fd
+</span></span></code></pre></td></tr></table></div></div><h2 id=create-an-image>Create an image.</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>qemu-img create -f raw -o <span class=nv>preallocation</span><span class=o>=</span>full ubuntu.img 40G
+</span></span></code></pre></td></tr></table></div></div><h2 id=boot-qemu-to-install-ubuntu>Boot QEMU to install Ubuntu</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>qemu-system-aarch64 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -machine virt,accel<span class=o>=</span>hvf <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -cpu host <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -smp <span class=m>8</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -m 8G <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -device virtio-blk-pci,drive<span class=o>=</span>system <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -drive <span class=nv>id</span><span class=o>=</span>system,if<span class=o>=</span>none,cache<span class=o>=</span>none,format<span class=o>=</span>raw,file<span class=o>=</span>./ubuntu.img <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -cdrom &lt;path/to/ubuntu iso&gt; <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -nographic <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -bios QEMU_EFI.fd
+</span></span></code></pre></td></tr></table></div></div><h1 id=boot-ubuntu-in-qemu>Boot Ubuntu in QEMU</h1><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>qemu-system-aarch64 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -machine virt,accel<span class=o>=</span>hvf <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -cpu host <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -smp <span class=m>8</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -m 8G <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -device virtio-blk-pci,drive<span class=o>=</span>system <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -drive <span class=nv>id</span><span class=o>=</span>system,if<span class=o>=</span>none,cache<span class=o>=</span>none,format<span class=o>=</span>raw,file<span class=o>=</span>./ubuntu.img <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -device virtio-net-pci,netdev<span class=o>=</span>net <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -netdev vde,id<span class=o>=</span>net,sock<span class=o>=</span>/var/run/vde.ctl <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -nographic <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>        -bios QEMU_EFI.fd
+</span></span></code></pre></td></tr></table></div></div><h2 id=test-1>Test</h2><p>Use the command <code>lspci</code> to check whether the network device is ready.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ lspci
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>00:00.0 Host bridge: Red Hat, Inc. QEMU PCIe Host bridge
+</span></span><span class=line><span class=cl>00:01.0 SCSI storage controller: Red Hat, Inc. Virtio block device
+</span></span><span class=line><span class=cl>00:02.0 Ethernet controller: Red Hat, Inc. Virtio network device
+</span></span></code></pre></td></tr></table></div></div><h1 id=configure-the-networking>Configure the networking</h1><ol><li><p>Get the name of the network device.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ ip link
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class=m>65536</span> qdisc noqueue state UNKNOWN mode DEFAULT group default qlen <span class=m>1000</span>
+</span></span><span class=line><span class=cl>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+</span></span><span class=line><span class=cl>2: enp0s2: &lt;BROADCAST,MULTICAST&gt; mtu <span class=m>1500</span> qdisc noop state DOWN mode DEFAULT group default qlen <span class=m>1000</span>
+</span></span><span class=line><span class=cl>    link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
+</span></span></code></pre></td></tr></table></div></div><p>We can see the name of the network device is <code>enp0s2</code>.</p></li><li><p>Configure the netplan.</p><p>i. Create the configuration file.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>sudo touch /etc/netplan/enp0s2-config.yaml
+</span></span></code></pre></td></tr></table></div></div><p>ii. Edit the <code>/etc/netplan/enp0s2-config.yaml</code> using the following content.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>network</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>version</span><span class=p>:</span><span class=w> </span><span class=m>2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ethernets</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>enp0s2</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>dhcp4</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>addresses</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=m>192.168.105.2</span><span class=l>/24]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>nameservers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>addresses</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=m>192.168.105.1</span><span class=p>]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>routes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=nt>to</span><span class=p>:</span><span class=w> </span><span class=l>default</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>via</span><span class=p>:</span><span class=w> </span><span class=m>192.168.105.1</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></li><li><p>Test the netplan.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>sudo netplan try
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Ping the gateway.</span>
+</span></span><span class=line><span class=cl>ping 192.168.105.1
+</span></span></code></pre></td></tr></table></div></div></li></ol><h1 id=log-into-the-server-by-ssh>Log into the server by SSH</h1><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>ssh 192.168.105.2
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
+<span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
+<span class=item-content>2022-05-28</span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/qemu/>QEMU</a>
+<a href=/tags/macos/>MacOS</a>
+<a href=/tags/apple-silicon/>Apple Silicon</a>
+<a href=/tags/vde/>VDE</a>
+<a href=/tags/vde_vmnet/>VDE_VMNET</a>
+<a href=/tags/m1/>M1</a></div><nav class=post-nav></nav></footer></article></div></div></main><footer id=footer class=footer><div class=social-links><a href=mailto:adonis0147@gmail.com class="iconfont icon-email" title=email></a>
+<a href=https://github.com/adonis0147 class="iconfont icon-github" title=github></a>
+<a href=https://adonis0147.github.io/index.xml type=application/rss+xml class="iconfont icon-rss" title=rss></a></div><div class=copyright><span class=power-by>Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a></span>
+<span class=division>|</span>
+<span class=theme-info>Theme -
+<a class=theme-link href=https://github.com/olOwOlo/hugo-theme-even>Even</a></span>
+<span class=copyright-year>&copy;
+2022<span class=heart><i class="iconfont icon-heart"></i></span><span>Adonis Ling</span></span></div></footer><div class=back-to-top id=back-to-top><i class="iconfont icon-up"></i></div></div><script src=https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin=anonymous></script>
+<script src=https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin=anonymous></script>
+<script src=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin=anonymous></script>
+<script type=text/javascript src=/js/main.min.64437849d125a2d603b3e71d6de5225d641a32d17168a58106e0b61852079683.js></script></body></html>
