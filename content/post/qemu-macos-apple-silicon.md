@@ -56,33 +56,33 @@ sudo launchctl load -w "/Library/LaunchDaemons/io.github.lima-vm.vde_vmnet.plist
 
 # Install Ubuntu
 
-## Download QEMU EFI.
+1. Download QEMU EFI.
 
-```shell
-curl -L https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd -o QEMU_EFI.fd
+    ```shell
+    curl -L https://releases.linaro.org/components/kernel/uefi-linaro/latest/release/qemu64/QEMU_EFI.fd -o QEMU_EFI.fd
 
-```
+    ```
 
-## Create an image.
+2. Create an image.
 
-```shell
-qemu-img create -f raw -o preallocation=full ubuntu.img 40G
-```
+    ```shell
+    qemu-img create -f raw -o preallocation=full ubuntu.img 40G
+    ```
 
-## Boot QEMU to install Ubuntu
+3. Boot QEMU to install Ubuntu.
 
-```shell
-qemu-system-aarch64 \
-        -machine virt,accel=hvf \
-        -cpu host \
-        -smp 8 \
-        -m 8G \
-        -device virtio-blk-pci,drive=system \
-        -drive id=system,if=none,cache=none,format=raw,file=./ubuntu.img \
-        -cdrom <path/to/ubuntu iso> \
-        -nographic \
-        -bios QEMU_EFI.fd
-```
+    ```shell
+    qemu-system-aarch64 \
+            -machine virt,accel=hvf \
+            -cpu host \
+            -smp 8 \
+            -m 8G \
+            -device virtio-blk-pci,drive=system \
+            -drive id=system,if=none,cache=none,format=raw,file=./ubuntu.img \
+            -cdrom <path/to/ubuntu iso> \
+            -nographic \
+            -bios QEMU_EFI.fd
+    ```
 
 # Boot Ubuntu in QEMU
 
