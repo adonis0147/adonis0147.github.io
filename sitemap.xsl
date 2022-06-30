@@ -10,6 +10,7 @@
       <head>
         <title>XML Sitemap</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="robots" content="noindex" />
         <style type="text/css">
           body {
           font-family: sans-serif;
