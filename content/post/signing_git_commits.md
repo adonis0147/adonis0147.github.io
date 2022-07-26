@@ -3,7 +3,7 @@ title: "Signing Git Commits"
 date: 2022-07-26T22:53:19+08:00
 draft: false
 summary: A guide to sign Git commits.
-tags: ["Signing", "Git", "Commits", "Github", "GPG", "MacOS"]
+tags: ["Signing", "Git", "Commits", "GitHub", "GPG", "MacOS"]
 categories: ["English"]
 ---
 
@@ -17,7 +17,7 @@ This post is a guide to sign Git commits.
     brew install gnupg pinentry-mac
     ```
 
-2. Generate a GPG key. You can also follow the [Github Docuemnt](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key).
+2. Generate a GPG key. You can also refer to the [GitHub Docuemnt](https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key).
 
     ```shell
     gpg --full-generate-key
@@ -37,9 +37,9 @@ This post is a guide to sign Git commits.
     gpg --armor --export <some GPG key ID>
     ```
 
-5. Add the GPG key to Github. You can follow the [Github Docuemnt](https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account).
+5. Add the GPG key to GitHub. You can refer to the [GitHub Docuemnt](https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account).
 
-6. Setting `gpg-agent` up.
+6. Set `gpg-agent` up.
 
     ```shell
     echo "pinentry-program $(which pinentry-mac)" >> ~/.gnupg/gpg-agent.conf
