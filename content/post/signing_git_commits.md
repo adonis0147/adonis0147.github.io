@@ -3,7 +3,7 @@ title: "Signing Git Commits"
 date: 2022-07-26T22:53:19+08:00
 draft: false
 summary: A guide to sign Git commits.
-tags: ["Signing", "Git", "Commits", "MacOS"]
+tags: ["Signing", "Git", "Commits", "Github", "GPG", "MacOS"]
 categories: ["English"]
 ---
 
