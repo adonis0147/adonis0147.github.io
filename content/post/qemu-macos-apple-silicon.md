@@ -2,7 +2,7 @@
 title: "Run Ubuntu in QEMU on MacOS (Apple Silicon)"
 date: 2022-05-28T11:48:49+08:00
 draft: false
-summary: A guide to run Ubuntu in QEMU on MacOS (Apple Silicon)
+summary: A guide to run Ubuntu in QEMU on MacOS (Apple Silicon).
 tags: ["QEMU", "MacOS", "Apple Silicon", "VDE", "VDE_VMNET", "M1"]
 categories: ["English"]
 ---
