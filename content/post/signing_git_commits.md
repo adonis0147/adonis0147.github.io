@@ -3,7 +3,7 @@ title: "Signing Git Commits"
 date: 2022-07-26T22:53:19+08:00
 draft: false
 summary: A guide to sign Git commits.
-tags: ["Signing", "Git", "Commits", "GitHub", "GPG", "MacOS"]
+tags: ["Signing", "Git", "Commits", "GitHub", "GPG", "MacOS", "Ubuntu"]
 categories: ["English"]
 ---
 
@@ -54,6 +54,33 @@ This post is a guide to sign Git commits.
     ```
 
 8. Check whether a commit was signed.
+
+    ```shell
+    git log --show-signature -1
+    ```
+
+# Ubuntu Server (22.04)
+
+1. Install `gnupg`.
+
+    ```shell
+    sudo apt install gpg
+    ```
+2. Follow the above steps (described for MacOS) from `2` to `5`.
+
+3. Set the environment variable.
+
+    ```shell
+    export GPG_TTY="$(tty)"
+    ```
+4. Add Git configurations.
+
+    ```shell
+    git config --global gpg.program gpg
+    git config --global commit.gpgsign true
+    ```
+
+5. Check whether a commit was signed.
 
     ```shell
     git log --show-signature -1
