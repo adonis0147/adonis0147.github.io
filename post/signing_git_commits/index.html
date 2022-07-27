@@ -12,7 +12,7 @@
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>gpg --list-secret-keys --keyid-format<span class=o>=</span>long
 </span></span></code></pre></td></tr></table></div></div></li><li><p>Export the GPG key.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>gpg --armor --export &lt;some GPG key ID&gt;
-</span></span></code></pre></td></tr></table></div></div></li><li><p>Add the GPG key to GitHub. You can refer to the <a href=https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account>GitHub Docuemnt</a>.</p></li><li><p>Setting <code>gpg-agent</code> up.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></span></code></pre></td></tr></table></div></div></li><li><p>Add the GPG key to GitHub. You can refer to the <a href=https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account>GitHub Docuemnt</a>.</p></li><li><p>Set <code>gpg-agent</code> up.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>echo</span> <span class=s2>&#34;pinentry-program </span><span class=k>$(</span>which pinentry-mac<span class=k>)</span><span class=s2>&#34;</span> &gt;&gt; ~/.gnupg/gpg-agent.conf
 </span></span><span class=line><span class=cl>killall gpg-agent
@@ -25,7 +25,7 @@
 </span></span></code></pre></td></tr></table></div></div></li></ol></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
 <span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
 <span class=item-content>2022-07-27
-<a href=https://github.com/adonis0147/adonis0147.github.io/commit/1526a35a0ec30162a823713331a72c254e3c9c53 title="Fix typos">(1526a35)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/signing/>Signing</a>
+<a href=https://github.com/adonis0147/adonis0147.github.io/commit/e476bba096d14887ff7f3055cc4e31a41385b2e4 title="Fix typos">(e476bba)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/signing/>Signing</a>
 <a href=/tags/git/>Git</a>
 <a href=/tags/commits/>Commits</a>
 <a href=/tags/github/>GitHub</a>
