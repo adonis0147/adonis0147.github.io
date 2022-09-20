@@ -77,8 +77,7 @@ sudo launchctl load -w "/Library/LaunchDaemons/io.github.lima-vm.vde_vmnet.plist
             -cpu host \
             -smp 8 \
             -m 8G \
-            -device virtio-blk-pci,drive=system \
-            -drive id=system,if=none,cache=none,format=raw,file=./ubuntu.img \
+            -drive if=virtio,cache=none,format=raw,file=./ubuntu.img \
             -cdrom <path/to/ubuntu iso> \
             -nographic \
             -bios QEMU_EFI.fd
@@ -92,10 +91,8 @@ qemu-system-aarch64 \
         -cpu host \
         -smp 8 \
         -m 8G \
-        -device virtio-blk-pci,drive=system \
-        -drive id=system,if=none,cache=none,format=raw,file=./ubuntu.img \
-        -device virtio-net-pci,netdev=net \
-        -netdev vde,id=net,sock=/var/run/vde.ctl \
+        -nic vde,model=virtio,sock=/var/run/vde.ctl \
+        -drive if=virtio,cache=none,format=raw,file=./ubuntu.img \
         -nographic \
         -bios QEMU_EFI.fd
 ```
@@ -108,8 +105,8 @@ Use the command `lspci` to check whether the network device is ready.
 $ lspci
 
 00:00.0 Host bridge: Red Hat, Inc. QEMU PCIe Host bridge
-00:01.0 SCSI storage controller: Red Hat, Inc. Virtio block device
-00:02.0 Ethernet controller: Red Hat, Inc. Virtio network device
+00:01.0 Ethernet controller: Red Hat, Inc. Virtio network device
+00:02.0 SCSI storage controller: Red Hat, Inc. Virtio block device
 ```
 
 # Configure the networking
@@ -121,25 +118,25 @@ $ lspci
 
     1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    2: enp0s2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
         link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
     ```
 
-    We can see the name of the network device is `enp0s2`.
+    We can see the name of the network device is `enp0s1`.
 
 2. Configure the netplan.
 
     i. Create the configuration file.
     ```shell
-    sudo touch /etc/netplan/enp0s2-config.yaml
+    sudo touch /etc/netplan/enp0s1-config.yaml
     ```
 
-    ii. Edit the `/etc/netplan/enp0s2-config.yaml` using the following content.
+    ii. Edit the `/etc/netplan/enp0s1-config.yaml` using the following content.
     ```yaml
     network:
       version: 2
       ethernets:
-        enp0s2:
+        enp0s1:
           dhcp4: false
           addresses: [192.168.105.2/24]
           nameservers:
