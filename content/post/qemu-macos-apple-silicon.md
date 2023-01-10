@@ -77,7 +77,7 @@ sudo launchctl load -w "/Library/LaunchDaemons/io.github.lima-vm.vde_vmnet.plist
             -cpu host \
             -smp 8 \
             -m 8G \
-            -drive if=virtio,cache=none,format=raw,file=./ubuntu.img \
+            -drive if=virtio,format=raw,file=./ubuntu.img \
             -cdrom <path/to/ubuntu iso> \
             -nographic \
             -bios QEMU_EFI.fd
@@ -92,7 +92,7 @@ qemu-system-aarch64 \
         -smp 8 \
         -m 8G \
         -nic vde,model=virtio,sock=/var/run/vde.ctl \
-        -drive if=virtio,cache=none,format=raw,file=./ubuntu.img \
+        -drive if=virtio,format=raw,file=./ubuntu.img \
         -nographic \
         -bios QEMU_EFI.fd
 ```
