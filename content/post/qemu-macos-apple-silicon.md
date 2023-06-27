@@ -1,24 +1,24 @@
 ---
-title: "Run Ubuntu in QEMU on MacOS (Apple Silicon)"
+title: "Run Ubuntu in QEMU on macOS (Apple Silicon)"
 date: 2022-05-28T11:48:49+08:00
 draft: false
-summary: A guide to run Ubuntu in QEMU on MacOS (Apple Silicon).
-tags: ["QEMU", "MacOS", "Apple Silicon", "VDE", "VDE_VMNET", "M1"]
+summary: A guide to run Ubuntu in QEMU on macOS (Apple Silicon).
+tags: ["QEMU", "macOS", "Apple Silicon", "VDE", "VDE_VMNET", "M1"]
 categories: ["English"]
 ---
 
-This post is a guide to run Ubuntu in QEMU on MacOS (Apple Silicon).
+This post is a guide to run Ubuntu in QEMU on macOS (Apple Silicon).
 
 The laptop in this post is `MacBook Pro (13-inch, M1, 2020)`.
 
-The OS is `MacOS 12.4 21F79 arm64`.
+The OS is `macOS 12.4 21F79 arm64`.
 
 # Prerequisite
 
 1. ubuntu-22.04-live-server-arm64.iso
 2. QEMU >= 7.0
 3. [vde_vmnet](https://github.com/lima-vm/vde_vmnet) >= v0.6.0
-4. MacOS >= Monterey (Apple Silicon)
+4. macOS >= Monterey (Apple Silicon)
 
 ## Preparation
 

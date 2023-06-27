@@ -3,13 +3,13 @@ title: "Signing Git Commits"
 date: 2022-07-26T22:53:19+08:00
 draft: false
 summary: A guide to sign Git commits.
-tags: ["Signing", "Git", "Commits", "GitHub", "GPG", "MacOS", "Ubuntu"]
+tags: ["Signing", "Git", "Commits", "GitHub", "GPG", "macOS", "Ubuntu"]
 categories: ["English"]
 ---
 
 This post is a guide to sign Git commits.
 
-# MacOS
+# macOS
 
 1. Install `gnupg` and `pinentry-mac`.
 
@@ -66,7 +66,7 @@ This post is a guide to sign Git commits.
     ```shell
     sudo apt install gpg
     ```
-2. Follow the above steps (described for MacOS) from `2` to `5`.
+2. Follow the above steps (described for macOS) from `2` to `5`.
 
 3. Set the environment variable.
 
