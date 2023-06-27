@@ -35,16 +35,16 @@ sake of data exchange. This post is a guide to do so.
    successfully.
 
     ```shell
-    ## Example:
-    ## We should see the virtfs is mounted on /tmp/virtfs with type 9p.
-    # $ mount
+    # Example:
+    # We should see the virtfs is mounted on /tmp/virtfs with type 9p.
+    $ mount
 
-    # sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
-    # proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-    # udev on /dev type devtmpfs (rw,nosuid,relatime,size=1928632k,nr_inodes=482158,mode=755,inode64)
-    # devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
-    # ...
-    # virtfs on /tmp/virtfs type 9p (rw,relatime,sync,dirsync,access=client,msize=512000,trans=virtio)
+    sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+    proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+    udev on /dev type devtmpfs (rw,nosuid,relatime,size=1928632k,nr_inodes=482158,mode=755,inode64)
+    devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+    ...
+    virtfs on /tmp/virtfs type 9p (rw,relatime,sync,dirsync,access=client,msize=512000,trans=virtio)
     ```
 
 4. **(Optional)** We can modify `/etc/fstab` to persist the mount point by adding the following line to `/etc/fstab`.
