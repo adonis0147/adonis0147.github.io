@@ -17,6 +17,9 @@ jobs:
 
       - name: Patch the Theme
         run: |
+          sed -i '1i \
+          {{ partial "custom_head.html" . }} \
+          ' themes/even/layouts/partials/head.html
           sed -i '/google_news.html/d' themes/even/layouts/partials/head.html
 
       - name: Setup Hugo
