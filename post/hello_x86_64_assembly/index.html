@@ -1,0 +1,649 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><title>Hello x86-64 Assembly - Adonis's Blog</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4766287755536875" crossorigin=anonymous></script><meta name=renderer content="webkit"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv=Cache-Control content="no-transform"><meta http-equiv=Cache-Control content="no-siteapp"><meta name=theme-color content="#f8f5ec"><meta name=msapplication-navbutton-color content="#f8f5ec"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec"><meta name=author content="Adonis Ling"><meta name=description content="x86-64 Assembly on Linux"><meta name=keywords content="Hugo,theme,even"><meta name=google-site-verification content="wQt7gqY6LP89EIyhTiHFzJJz6g0GVV-jFNLam6Qofa8"><meta name=generator content="Hugo 0.121.2 with theme even"><link rel=canonical href=https://adonis0147.github.io/post/hello_x86_64_assembly/><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=manifest href=/manifest.json><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><link href=/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css rel=stylesheet><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin=anonymous><meta property="og:title" content="Hello x86-64 Assembly"><meta property="og:description" content="x86-64 Assembly on Linux"><meta property="og:type" content="article"><meta property="og:url" content="https://adonis0147.github.io/post/hello_x86_64_assembly/"><meta property="article:section" content="post"><meta property="article:published_time" content="2024-01-18T21:00:49+08:00"><meta property="article:modified_time" content="2024-01-19T21:15:01+08:00"><meta itemprop=name content="Hello x86-64 Assembly"><meta itemprop=description content="x86-64 Assembly on Linux"><meta itemprop=datePublished content="2024-01-18T21:00:49+08:00"><meta itemprop=dateModified content="2024-01-19T21:15:01+08:00"><meta itemprop=wordCount content="2417"><meta itemprop=keywords content="x86-64,Assembly,Linux,"><meta name=twitter:card content="summary"><meta name=twitter:title content="Hello x86-64 Assembly"><meta name=twitter:description content="x86-64 Assembly on Linux"><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script><script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]--></head><body><div id=mobile-navbar class=mobile-navbar><div class=mobile-header-logo><a href=/ class=logo>Adonis's Blog</a></div><div class=mobile-navbar-icon><span></span>
+<span></span>
+<span></span></div></div><nav id=mobile-menu class="mobile-menu slideout-menu"><ul class=mobile-menu-list><a href=/><li class=mobile-menu-item>Home</li></a><a href=/post/><li class=mobile-menu-item>Archives</li></a><a href=/tags/><li class=mobile-menu-item>Tags</li></a><a href=/categories/><li class=mobile-menu-item>Categories</li></a></ul></nav><div class=container id=mobile-panel><header id=header class=header><div class=logo-wrapper><a href=/ class=logo>Adonis's Blog</a></div><nav class=site-navbar><ul id=menu class=menu><li class=menu-item><a class=menu-item-link href=/>Home</a></li><li class=menu-item><a class=menu-item-link href=/post/>Archives</a></li><li class=menu-item><a class=menu-item-link href=/tags/>Tags</a></li><li class=menu-item><a class=menu-item-link href=/categories/>Categories</a></li></ul></nav></header><main id=main class=main><div class=content-wrapper><div id=content class=content><article class=post><header class=post-header><h1 class=post-title>Hello x86-64 Assembly</h1><div class=post-meta><span class=post-time>2024-01-18</span><div class=post-category><a href=/categories/english/>English</a></div><span class=more-meta>2417 words </span><span class=more-meta>12 mins read </span><span id=busuanzi_container_page_pv class=more-meta><span id=busuanzi_value_page_pv><img src=/img/spinner.svg alt=spinner.svg></span> times read</span></div></header><div class=post-toc id=post-toc><h2 class=post-toc-title>Contents</h2><div class="post-toc-content always-active"><nav id=TableOfContents><ul><li><a href=#environment>Environment</a></li><li><a href=#invoke-syscall>Invoke syscall</a><ul><li><a href=#1-int-0x80-32-bit-_deprecated_>1. INT 0x80 (32-bit, <em>deprecated</em>)</a></li><li><a href=#2-syscall-default-in-64-bit-_recommended_>2. SYSCALL (default in 64-bit, <em>recommended</em>)</a></li></ul></li><li><a href=#system-v-abi-x86-64-calling-convention>System V ABI (x86-64 calling convention)</a></li><li><a href=#use-gcc-to-generate-the-executable>Use GCC to generate the executable</a></li><li><a href=#pass-parameters-by-stack>Pass parameters by stack</a></li><li><a href=#some-useful-materials>Some useful materials</a></li></ul></nav></div></div><div class=post-content><p>Recently, I practised x86-64 Assembly on Linux platform. This post records some examples and some issues I met during the process.</p><h1 id=environment>Environment</h1><ol><li>Ubuntu 22.04.3 LTS</li><li>NASM version 2.15.05</li><li>GNU ld 2.38</li><li>gcc 11.4.0</li></ol><h1 id=invoke-syscall>Invoke syscall</h1><p>There are some ways to invoke syscall and I just want to mention the following two ways here.</p><h2 id=1-int-0x80-32-bit-_deprecated_>1. INT 0x80 (32-bit, <em>deprecated</em>)</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g int80h.asm &amp;&amp; ld int80h.o -o int80h</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>_start</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mh>0xA</span>
+</span></span><span class=line><span class=cl><span class=nl>length:</span> <span class=nf>equ</span> <span class=kc>$</span> <span class=o>-</span> <span class=nv>message</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>_start:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>4</span>          <span class=c1>; call write</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>ebx</span><span class=p>,</span> <span class=mi>1</span>          <span class=c1>; file descriptor 1 (stdout)</span>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>ecx</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the string to write</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>edx</span><span class=p>,</span> <span class=nv>length</span>     <span class=c1>; the length of the string</span>
+</span></span><span class=line><span class=cl>    <span class=nf>int</span> <span class=mh>0x80</span>            <span class=c1>; invoke the syscall</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>1</span>          <span class=c1>; call exit</span>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>ebx</span><span class=p>,</span> <span class=nb>ebx</span>        <span class=c1>; error code 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>int</span> <span class=mh>0x80</span>            <span class=c1>; invoke the syscall</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>The number of the syscall can be referred to <code>/usr/include/x86_64-linux-gnu/asm/unistd_32.h</code>.</li><li>The calling convention can be referred to <a href=https://github.com/torvalds/linux/blob/296455ade1fdcf5f8f8c033201633b60946c589a/arch/x86/entry/entry_32.S#L780>linux/arch/x86/entry/entry_32.S</a>.</li></ul><h2 id=2-syscall-default-in-64-bit-_recommended_>2. SYSCALL (default in 64-bit, <em>recommended</em>)</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g syscall.asm &amp;&amp; ld syscall.o -o syscall</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>_start</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mh>0xA</span>
+</span></span><span class=line><span class=cl><span class=nl>length:</span> <span class=nf>equ</span> <span class=kc>$</span> <span class=o>-</span> <span class=nv>message</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>_start:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rax</span><span class=p>,</span> <span class=mi>1</span>          <span class=c1>; call write</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdi</span><span class=p>,</span> <span class=mi>1</span>          <span class=c1>; file descriptor 1 (stdout)</span>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rsi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the string to write</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdx</span><span class=p>,</span> <span class=nv>length</span>     <span class=c1>; the length of the string</span>
+</span></span><span class=line><span class=cl>    <span class=nf>syscall</span>             <span class=c1>; invoke the syscall</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>60</span>         <span class=c1>; call exit</span>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nb>rdi</span>        <span class=c1>; error code 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>syscall</span>             <span class=c1>; invoke the syscall</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>The number of the syscall can be referred to <code>/usr/include/x86_64-linux-gnu/asm/unistd_64.h</code>.</li><li>The calling convention can be referred to <a href=https://github.com/torvalds/linux/blob/296455ade1fdcf5f8f8c033201633b60946c589a/arch/x86/entry/entry_64.S#L68>linux/arch/x86/entry/entry_64.S</a>.</li></ul><h1 id=system-v-abi-x86-64-calling-convention>System V ABI (x86-64 calling convention)</h1><p>We should be familiar to the calling convention when we coding in Assembly. <a href=https://wiki.osdev.org/System_V_ABI>This link</a> is very helpful.</p><blockquote><p>This is a 64-bit platform. The stack grows downwards. Parameters to functions are passed in the registers rdi, rsi, rdx, rcx, r8, r9, and further values are passed on the stack in reverse order.
+Parameters passed on the stack may be modified by the called function. Functions are called using the call instruction that pushes the address of the next instruction to the stack and jumps to the operand.
+Functions return to the caller using the ret instruction that pops a value from the stack and jump to it. The stack is 16-byte aligned just before the call instruction is called.</p></blockquote><blockquote><p>Functions preserve the registers rbx, rsp, rbp, r12, r13, r14, and r15; while rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11 are scratch registers.
+The return value is stored in the rax register, or if it is a 128-bit value, then the higher 64-bits go in rdx.</p></blockquote><p>In the following program, the <code>_start</code> procedure calls <code>main</code> procedure.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call.asm &amp;&amp; ld call.o -o call</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>_start</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>_start:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; error code</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>60</span>         <span class=c1>; call exit</span>
+</span></span><span class=line><span class=cl>    <span class=nf>syscall</span>             <span class=c1>; invoke the syscall</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>The <code>CALL</code> instruction pushes the <code>$rip</code> to the stack and <code>RET</code> instruction pops a value from the stack and jump to it. We can verify this by GDB.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Program stopped.
+</span></span><span class=line><span class=cl>0x0000000000401000 in _start <span class=o>()</span>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> disassemble
+</span></span><span class=line><span class=cl>Dump of assembler code <span class=k>for</span> <span class=k>function</span> _start:
+</span></span><span class=line><span class=cl><span class=o>=</span>&gt; 0x0000000000401000 &lt;+0&gt;:     call   0x40100f &lt;main&gt;
+</span></span><span class=line><span class=cl>   0x0000000000401005 &lt;+5&gt;:     mov    %rax,%rdi
+</span></span><span class=line><span class=cl>   0x0000000000401008 &lt;+8&gt;:     mov    <span class=nv>$0</span>x3c,%eax
+</span></span><span class=line><span class=cl>   0x000000000040100d &lt;+13&gt;:    syscall
+</span></span><span class=line><span class=cl>End of assembler dump.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> x/a <span class=nv>$rsp</span>
+</span></span><span class=line><span class=cl>0x7fffffffe1d0: 0x1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> stepi
+</span></span><span class=line><span class=cl>0x000000000040100f in main <span class=o>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> disassemble
+</span></span><span class=line><span class=cl>Dump of assembler code <span class=k>for</span> <span class=k>function</span> main:
+</span></span><span class=line><span class=cl><span class=o>=</span>&gt; 0x000000000040100f &lt;+0&gt;:     ret
+</span></span><span class=line><span class=cl>End of assembler dump.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> x/2a <span class=nv>$rsp</span>
+</span></span><span class=line><span class=cl>0x7fffffffe1c8: 0x401005 &lt;_start+5&gt;     0x1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> info frame
+</span></span><span class=line><span class=cl>Stack level 0, frame at 0x7fffffffe1c8:
+</span></span><span class=line><span class=cl> <span class=nv>rip</span> <span class=o>=</span> 0x40100f in main<span class=p>;</span> saved <span class=nv>rip</span> <span class=o>=</span> 0x401005
+</span></span><span class=line><span class=cl> Arglist at 0x7fffffffe1c0, args:
+</span></span><span class=line><span class=cl> Locals at 0x7fffffffe1c0, Previous frame<span class=err>&#39;</span>s sp is 0x7fffffffe1d0
+</span></span><span class=line><span class=cl> Saved registers:
+</span></span><span class=line><span class=cl>  rip at 0x7fffffffe1c8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> nexti
+</span></span><span class=line><span class=cl>0x0000000000401005 in _start <span class=o>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> x/a <span class=nv>$rsp</span>
+</span></span><span class=line><span class=cl>0x7fffffffe1d0: 0x1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>(</span>gdb<span class=o>)</span> x/2a <span class=nv>$rsp</span> - <span class=m>8</span>
+</span></span><span class=line><span class=cl>0x7fffffffe1c8: 0x401005 &lt;_start+5&gt;     0x1
+</span></span></code></pre></td></tr></table></div></div><p>It is worth noting that the stack is <strong>16-byte aligned</strong> just before the call instruction is called.</p><p>In the above example, the <code>$rsp</code> is <strong>16-byte aligned</strong> (<code>0x7fffffffe1d0</code>) before calling the <code>main</code> procedure.
+However, after performing the <code>CALL</code> instruction, the <code>$rsp</code> is <strong>8-byte aligned</strong> (<code>0x7fffffffe1c8</code>) due to the <code>$rip</code> was pushed to the stack.
+This violation may cause troubles. The following program is an example.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_seg_err.asm &amp;&amp; ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 call_seg_err.o -o call_seg_err -lc</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>_start</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>_start:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; error code</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>60</span>         <span class=c1>; call exit</span>
+</span></span><span class=line><span class=cl>    <span class=nf>syscall</span>             <span class=c1>; invoke the syscall</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>In my machine, I got a segmentation fault when I ran the program.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>❯ ./call_seg_err
+</span></span><span class=line><span class=cl>zsh: segmentation fault <span class=o>(</span>core dumped<span class=o>)</span>  ./call_seg_err
+</span></span></code></pre></td></tr></table></div></div><p>The rationale is that the <code>$rsp</code> is <strong>NOT</strong> 16-byte aligned just before calling the C function <code>puts</code>.</p><p>We can resolve the issue like this.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sub</span> <span class=nb>rsp</span><span class=p>,</span> <span class=mi>8</span>          <span class=c1>; to make the stack pointer 16-byte aligned</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>add</span> <span class=nb>rsp</span><span class=p>,</span> <span class=mi>8</span>          <span class=c1>; restore the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>Optionally, functions push rbp such that the caller-return-rip is 8 bytes above it, and set rbp to the address of the saved rbp.
+This allows iterating through the existing stack frames. This can be eliminated by specifying the -fomit-frame-pointer GCC option.</p></blockquote><p>Alternatively, we can just push <code>$rbp</code> to the stack to make the <code>$rsp</code> 16-byte aligned.
+What&rsquo;s more, we usually assign <code>$rsp</code> to <code>$rbp</code> which allows iterating through the existing stack frames.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>            <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>        <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rsp</span><span class=p>,</span> <span class=nb>rbp</span>        <span class=c1>; restore the stack pointer</span>
+</span></span><span class=line><span class=cl>    <span class=nf>pop</span> <span class=nb>rbp</span>             <span class=c1>; restore the frame pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>We can also use the <code>LEAVE</code> instruction to restore the stack and frame pointers. Thus, we can simplify the <code>main</code> procedure like this.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>            <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>        <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>               <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>The complete program is shown below.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_aligned.asm &amp;&amp; ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 call_aligned.o -o call_aligned -lc</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>_start</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>_start:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; error code</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>eax</span><span class=p>,</span> <span class=mi>60</span>         <span class=c1>; call exit</span>
+</span></span><span class=line><span class=cl>    <span class=nf>syscall</span>             <span class=c1>; invoke the syscall</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>            <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>        <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>               <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=use-gcc-to-generate-the-executable>Use GCC to generate the executable</h1><p>In the above examples, we use GNU linker <code>ld</code> to generate the final executable.
+Alternatively, we can use GCC to help generate the executable which it is more convenient.</p><p>Consider the following example.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_gcc.asm &amp;&amp; gcc -g call_gcc.o -o call_gcc</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>            <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>        <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>    <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span>           <span class=c1>; call C function puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>        <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>               <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>Unfortunately, I couldn&rsquo;t compile this code on my machine.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>❯ nasm -f elf64 -g call_gcc.asm <span class=o>&amp;&amp;</span> gcc -g call_gcc.o -o call_gcc
+</span></span><span class=line><span class=cl>/usr/bin/ld: call_gcc.o: relocation R_X86_64_32S against <span class=sb>`</span>.rdata<span class=err>&#39;</span> can not be used when making a PIE object<span class=p>;</span> recompile with -fPIE
+</span></span><span class=line><span class=cl>/usr/bin/ld: failed to <span class=nb>set</span> dynamic section sizes: bad value
+</span></span><span class=line><span class=cl>collect2: error: ld returned <span class=m>1</span> <span class=nb>exit</span> status
+</span></span></code></pre></td></tr></table></div></div><p>The GCC compiler was compiled with <code>--enable-default-pie</code> by default on Ubuntu 22.04.3 which causes this issue.
+However, NASM doesn&rsquo;t provide a way to generate an object file compiled with <code>-fPIE</code>.</p><p>There are two workarounds.</p><ol><li><p>Use <code>[rel symbol]</code> which is position-independent rather than just <code>symbol</code>.</p><p>In the above example, the line <code>lea rdi, message</code> should be replaced by <code>lea rdi, [rel message]</code>.</p></li><li><p>Use <code>default rel</code> instead of modifying every addressing mode.</p></li></ol><p>But, there is another issue occurring after applying the second workaround.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>❯ nasm -f elf64 -g call_gcc.asm <span class=o>&amp;&amp;</span> gcc -g call_gcc.o -o call_gcc
+</span></span><span class=line><span class=cl>/usr/bin/ld: call_gcc.o: warning: relocation against <span class=sb>`</span>puts@@GLIBC_2.2.5<span class=s1>&#39; in read-only section `.text&#39;</span>
+</span></span><span class=line><span class=cl>/usr/bin/ld: call_gcc.o: relocation R_X86_64_PC32 against symbol <span class=sb>`</span>puts@@GLIBC_2.2.5<span class=err>&#39;</span> can not be used when making a PIE object<span class=p>;</span> recompile with -fPIE
+</span></span><span class=line><span class=cl>/usr/bin/ld: final link failed: bad value
+</span></span><span class=line><span class=cl>collect2: error: ld returned <span class=m>1</span> <span class=nb>exit</span> status
+</span></span></code></pre></td></tr></table></div></div><p>We can fix this issue by calling C function through the PLT (Procedure Linkage Table). Instead of calling <code>puts</code> directly, we call <code>puts wrt ..plt</code>.</p><p>The complete program is shown below.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_gcc.asm &amp;&amp; gcc -g call_gcc.o -o call_gcc</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>default</span> <span class=nv>rel</span>             <span class=c1>; use relative addressing</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>puts</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>message:</span> <span class=kd>db</span> <span class=s>&#34;Hello, world!&#34;</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>                <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>            <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>message</span>        <span class=c1>; the first argument for C function puts</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>puts</span> <span class=ow>wrt</span> <span class=nv>..plt</span>     <span class=c1>; call C function puts through PLT</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>            <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>                   <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=pass-parameters-by-stack>Pass parameters by stack</h1><p>We use the stack to pass parameters of which the number is more than <code>6</code>. The following program is an example.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_printf.asm &amp;&amp; gcc -g call_printf.o -o call_printf</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>default</span> <span class=nv>rel</span>             <span class=c1>; use relative addressing</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>printf</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>format:</span> <span class=kd>db</span> <span class=s>&#34;%d %d %d %d %d %d %d %d&#34;</span><span class=p>,</span> <span class=mh>0xA</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>                <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>            <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sub</span> <span class=nb>rsp</span><span class=p>,</span> <span class=mi>8</span>              <span class=c1>; expand the stack to a suitable place</span>
+</span></span><span class=line><span class=cl>                            <span class=c1>; in order to make it 16-byte aligned after pushing all the paramenters</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>format</span>         <span class=c1>; 1st argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rsi</span><span class=p>,</span> <span class=mi>1</span>              <span class=c1>; 2nd argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdx</span><span class=p>,</span> <span class=mi>2</span>              <span class=c1>; 3rd argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rcx</span><span class=p>,</span> <span class=mi>3</span>              <span class=c1>; 4th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nv>r8</span><span class=p>,</span> <span class=mi>4</span>               <span class=c1>; 5th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nv>r9</span><span class=p>,</span> <span class=mi>5</span>               <span class=c1>; 6th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=mi>8</span>                  <span class=c1>; 9th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=mi>7</span>                  <span class=c1>; 8th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=mi>6</span>                  <span class=c1>; 7th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>            <span class=c1>; because printf is varargs</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>printf</span> <span class=ow>wrt</span> <span class=nv>..plt</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>            <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>                   <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><p>The following program does the same thing.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nasm data-lang=nasm><span class=line><span class=cl><span class=c1>; Run:</span>
+</span></span><span class=line><span class=cl><span class=c1>;   nasm -f elf64 -g call_printf.asm &amp;&amp; gcc -g call_printf.o -o call_printf</span>
+</span></span><span class=line><span class=cl><span class=c1>;</span>
+</span></span><span class=line><span class=cl>    <span class=nf>default</span> <span class=nv>rel</span>                 <span class=c1>; use relative addressing</span>
+</span></span><span class=line><span class=cl>    <span class=k>global</span> <span class=nv>main</span>
+</span></span><span class=line><span class=cl>    <span class=k>extern</span> <span class=nv>printf</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.rdata</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>format:</span> <span class=kd>db</span> <span class=s>&#34;%d %d %d %d %d %d %d %d&#34;</span><span class=p>,</span> <span class=mh>0xA</span><span class=p>,</span> <span class=mi>0</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>section</span> <span class=nv>.text</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nl>main:</span>
+</span></span><span class=line><span class=cl>    <span class=nf>push</span> <span class=nb>rbp</span>                    <span class=c1>; save the frame pointer and the stack pointer is 16-byte aligned now</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rbp</span><span class=p>,</span> <span class=nb>rsp</span>                <span class=c1>; save the stack pointer</span>
+</span></span><span class=line><span class=cl>    <span class=nf>sub</span> <span class=nb>rsp</span><span class=p>,</span> <span class=mi>32</span>                 <span class=c1>; expand the stack to a suitable place</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>lea</span> <span class=nb>rdi</span><span class=p>,</span> <span class=nv>format</span>             <span class=c1>; 1st argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rsi</span><span class=p>,</span> <span class=mi>1</span>                  <span class=c1>; 2nd argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rdx</span><span class=p>,</span> <span class=mi>2</span>                  <span class=c1>; 3rd argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nb>rcx</span><span class=p>,</span> <span class=mi>3</span>                  <span class=c1>; 4th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nv>r8</span><span class=p>,</span> <span class=mi>4</span>                   <span class=c1>; 5th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=nv>r9</span><span class=p>,</span> <span class=mi>5</span>                   <span class=c1>; 6th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=kt>qword</span> <span class=p>[</span><span class=nb>rsp</span><span class=p>],</span> <span class=mi>6</span>          <span class=c1>; 7th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=kt>qword</span> <span class=p>[</span><span class=nb>rsp</span> <span class=o>+</span> <span class=mi>8</span><span class=p>],</span> <span class=mi>7</span>      <span class=c1>; 8th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>mov</span> <span class=kt>qword</span> <span class=p>[</span><span class=nb>rsp</span> <span class=o>+</span> <span class=mi>16</span><span class=p>],</span> <span class=mi>8</span>     <span class=c1>; 9th argument</span>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>                <span class=c1>; because printf is varargs</span>
+</span></span><span class=line><span class=cl>    <span class=nf>call</span> <span class=nv>printf</span> <span class=ow>wrt</span> <span class=nv>..plt</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=nf>xor</span> <span class=nb>rax</span><span class=p>,</span> <span class=nb>rax</span>                <span class=c1>; return 0</span>
+</span></span><span class=line><span class=cl>    <span class=nf>leave</span>                       <span class=c1>; restore the stack and frame pointers</span>
+</span></span><span class=line><span class=cl>    <span class=nf>ret</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li><p>The stack grows <strong>downwards</strong>, so the place <code>$rsp + 8</code> is under the place <code>$rsp</code>.</p></li><li><p>It is also worth noting that we should clear the <code>$rax</code> (perform <code>xor rax, rax</code>) before we call the C function <code>printf</code>.
+This is because the C function <code>printf</code> uses a variable number of arguments and <code>$rax</code> specifies how many vector registers are used for the arguments.</p></li></ul><h1 id=some-useful-materials>Some useful materials</h1><ul><li><a href=https://cs.lmu.edu/~ray/notes/nasmtutorial/>NASM Tutorial</a></li><li><a href=https://wiki.osdev.org/System_V_ABI>System V ABI</a></li><li><a href=https://stackoverflow.com/questions/58106310/nasm-linux-shared-object-error-relocation-r-x86-64-32s-against-data>NASM Linux shared object error: Relocation R_X86_64_32S against &lsquo;.data&rsquo;</a></li><li><a href=https://stackoverflow.com/questions/36007975/compile-error-relocation-r-x86-64-pc32-against-undefined-symbol/41322328>Compile error: relocation R_X86_64_PC32 against undefined symbol</a></li><li><a href=https://stackoverflow.com/questions/6212665/why-is-eax-zeroed-before-a-call-to-printf>Why is %eax zeroed before a call to printf?</a></li></ul></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
+<span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
+<span class=item-content>2024-01-19
+<a href=https://github.com/adonis0147/adonis0147.github.io/commit/ab11888e8068483cb3fc51ff648dddb5b2b1c111 title="Update a post: hello_x86_64_assembly.md">(ab11888)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/x86-64/>x86-64</a>
+<a href=/tags/assembly/>Assembly</a>
+<a href=/tags/linux/>Linux</a></div><nav class=post-nav><a class=next href=/post/qemu-9p-virtfs/><span class="next-text nav-default">Use QEMU's 9pfs to Share Directores on macOS with Linux Guest</span>
+<span class="next-text nav-mobile">Next</span>
+<i class="iconfont icon-right"></i></a></nav></footer></article></div><script src=https://utteranc.es/client.js repo=adonis0147/adonis0147.github.io issue-term=pathname theme=github-light crossorigin=anonymous async></script><noscript>Please enable JavaScript to view the <a href=https://github.com/utterance>comments powered by utterances.</a></noscript></div></main><footer id=footer class=footer><div class=social-links><a href=mailto:adonis0147@gmail.com class="iconfont icon-email" title=email></a><a href=https://github.com/adonis0147 class="iconfont icon-github" title=github></a><a href=https://adonis0147.github.io/index.xml type=application/rss+xml class="iconfont icon-rss" title=rss></a></div><div class=copyright><span class=power-by>Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a>
+</span><span class=division>|</span>
+<span class=theme-info>Theme -
+<a class=theme-link href=https://github.com/olOwOlo/hugo-theme-even>Even</a></span><div class=busuanzi-footer><span id=busuanzi_container_site_pv>site pv: <span id=busuanzi_value_site_pv><img src=/img/spinner.svg alt=spinner.svg></span> </span><span class=division>|</span>
+<span id=busuanzi_container_site_uv>site uv: <span id=busuanzi_value_site_uv><img src=/img/spinner.svg alt=spinner.svg></span></span></div><span class=copyright-year>&copy;
+2022 -
+2024<span class=heart><i class="iconfont icon-heart"></i></span><span>Adonis Ling</span></span></div></footer><div class=back-to-top id=back-to-top><i class="iconfont icon-up"></i></div></div><script src=https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin=anonymous></script><script type=text/javascript src=/js/main.min.4ae89da218555efa0e7093a20b92017d2e1202b66fff9fc2edf4cb8d44b44c6e.js></script></body></html>
