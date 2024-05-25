@@ -18,7 +18,7 @@ from `make` and forwards the commands to the compiler.
 In this post, I will show how to use [wrapper_c](https://github.com/adonis0147/wrapper_c) to 
 generate `compile_commands.json` for [PostgreSQL](https://www.postgresql.org/).
 
-I use [docker](https://www.docker.com/) to set the enviroment up. The followings are steps.
+I use [docker](https://www.docker.com/) to set the environment up. The followings are steps.
 
 1. Create a file named `Dockerfile` and edit it using the following content.
     ```docker
