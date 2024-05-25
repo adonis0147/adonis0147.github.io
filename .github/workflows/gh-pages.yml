@@ -15,6 +15,12 @@ jobs:
           submodules: true  # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
+      - name: Patch the theme
+        run: |
+          pushd themes/even &>/dev/null
+          git apply ../patch
+          popd &>/dev/null
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
