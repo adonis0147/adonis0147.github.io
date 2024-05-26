@@ -1,0 +1,961 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><title>Build a Portable GCC Toolchain - Adonis's Blog</title>
+<meta name=renderer content="webkit"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv=Cache-Control content="no-transform"><meta http-equiv=Cache-Control content="no-siteapp"><meta name=theme-color content="#f8f5ec"><meta name=msapplication-navbutton-color content="#f8f5ec"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec"><meta name=author content="Adonis Ling"><meta name=description content="A guide to build a portable GCC toolchain"><meta name=keywords content="Hugo,theme,even"><meta name=google-site-verification content="wQt7gqY6LP89EIyhTiHFzJJz6g0GVV-jFNLam6Qofa8"><meta name=generator content="Hugo 0.126.1 with theme even"><link rel=canonical href=https://adonis0147.github.io/post/portable-gcc-toolchain/><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=manifest href=/manifest.json><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><link href=/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css rel=stylesheet><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin=anonymous><meta property="og:url" content="https://adonis0147.github.io/post/portable-gcc-toolchain/"><meta property="og:site_name" content="Adonis's Blog"><meta property="og:title" content="Build a Portable GCC Toolchain"><meta property="og:description" content="A guide to build a portable GCC toolchain"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="post"><meta property="article:published_time" content="2024-05-09T16:49:12+08:00"><meta property="article:modified_time" content="2024-05-26T19:22:31+08:00"><meta property="article:tag" content="GCC"><meta property="article:tag" content="X86_64"><meta property="article:tag" content="Aarch64"><meta itemprop=name content="Build a Portable GCC Toolchain"><meta itemprop=description content="A guide to build a portable GCC toolchain"><meta itemprop=datePublished content="2024-05-09T16:49:12+08:00"><meta itemprop=dateModified content="2024-05-26T19:22:31+08:00"><meta itemprop=wordCount content="2225"><meta itemprop=keywords content="GCC,X86_64,Aarch64"><meta name=twitter:card content="summary"><meta name=twitter:title content="Build a Portable GCC Toolchain"><meta name=twitter:description content="A guide to build a portable GCC toolchain"><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script><script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]--></head><body><div id=mobile-navbar class=mobile-navbar><div class=mobile-header-logo><a href=/ class=logo>Adonis's Blog</a></div><div class=mobile-navbar-icon><span></span>
+<span></span>
+<span></span></div></div><nav id=mobile-menu class="mobile-menu slideout-menu"><ul class=mobile-menu-list><a href=/><li class=mobile-menu-item>Home</li></a><a href=/post/><li class=mobile-menu-item>Archives</li></a><a href=/tags/><li class=mobile-menu-item>Tags</li></a><a href=/categories/><li class=mobile-menu-item>Categories</li></a></ul></nav><div class=container id=mobile-panel><header id=header class=header><div class=logo-wrapper><a href=/ class=logo>Adonis's Blog</a></div><nav class=site-navbar><ul id=menu class=menu><li class=menu-item><a class=menu-item-link href=/>Home</a></li><li class=menu-item><a class=menu-item-link href=/post/>Archives</a></li><li class=menu-item><a class=menu-item-link href=/tags/>Tags</a></li><li class=menu-item><a class=menu-item-link href=/categories/>Categories</a></li></ul></nav></header><main id=main class=main><div class=content-wrapper><div id=content class=content><article class=post><header class=post-header><h1 class=post-title>Build a Portable GCC Toolchain</h1><div class=post-meta><span class=post-time>2024-05-09</span><div class=post-category><a href=/categories/english/>English</a></div><span class=more-meta>2225 words </span><span class=more-meta>11 mins read </span><span id=busuanzi_container_page_pv class=more-meta><span id=busuanzi_value_page_pv><img src=/img/spinner.svg alt=spinner.svg></span> times read</span></div></header><div class=post-toc id=post-toc><h2 class=post-toc-title>Contents</h2><div class="post-toc-content always-active"><nav id=TableOfContents><ul><li><a href=#prerequisite>Prerequisite</a><ul><li><a href=#preparation>Preparation</a></li><li><a href=#overview>Overview</a></li><li><a href=#environment>Environment</a></li></ul></li><li><a href=#build-and-install-cross-gcc-toolchain>Build and install cross GCC toolchain</a><ul><li><a href=#validation>Validation</a></li></ul></li><li><a href=#build-final-gcc-toolchain-by-the-cross-gcc-toolchain>Build final GCC toolchain by the cross GCC toolchain.</a></li><li><a href=#use-the-gcc-toolchain-seamlessly>Use the GCC toolchain seamlessly</a><ul><li><a href=#validation-1>Validation</a></li></ul></li><li><a href=#make-gcc-toolchain-portable-by-patchelf>Make GCC toolchain portable by patchelf</a><ul><li><a href=#validation-2>Validation</a></li></ul></li><li><a href=#use-the-all-in-one-script>Use the all-in-one script</a><ul><li><a href=#example>Example</a></li></ul></li><li><a href=#references>References</a></li></ul></nav></div></div><div class=post-content><p>This post is a guide to build a GCC toolchain. The GCC toolchain is <strong>portable</strong> and <strong>self-contained</strong>
+(<em>the only dependency is the Linux kernel</em>).</p><p>I use <a href=https://www.docker.com/>docker</a> to set the environment up.</p><p><strong><em>TL;DR</em></strong>: Just download the all-in-one script in the <a href=https://github.com/adonis0147/devel-env/releases>release page</a>
+and <a href=/post/portable-gcc-toolchain/#use-the-all-in-one-script>use it</a>.</p><h1 id=prerequisite>Prerequisite</h1><ul><li><a href=https://www.docker.com/>Docker</a></li><li><a href=https://ftpmirror.gnu.org/binutils/binutils-2.42.tar.xz>Binutils 2.42</a></li><li><a href=https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.30.tar.xz>Linux Kernel 6.6.30</a></li><li><a href=https://ftpmirror.gnu.org/glibc/glibc-2.39.tar.xz>glibc 2.39</a></li><li><a href=https://ftpmirror.gnu.org/gcc/gcc-14.1.0/gcc-14.1.0.tar.xz>GCC 14.1</a></li><li><a href=https://github.com/besser82/libxcrypt/releases/download/v4.4.36/libxcrypt-4.4.36.tar.xz>libxcrypt 4.4.36</a></li><li><a href=https://github.com/NixOS/patchelf/releases/tag/0.16.1>patchelf 0.16.1</a></li></ul><h2 id=preparation>Preparation</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Use ubuntu:22.04 image</span>
+</span></span><span class=line><span class=cl>docker run -it ubuntu:22.04 bash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /root
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>apt update <span class=o>&amp;&amp;</span> apt upgrade --yes
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Install dependencies</span>
+</span></span><span class=line><span class=cl><span class=nv>DEBIAN_FRONTEND</span><span class=o>=</span>noninteractive apt install --yes <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    build-essential texinfo bison git curl rsync gawk <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    python-is-python3 help2man file
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Download sources</span>
+</span></span><span class=line><span class=cl>mkdir packages
+</span></span><span class=line><span class=cl>curl -L <span class=s1>&#39;https://ftpmirror.gnu.org/binutils/binutils-2.42.tar.xz&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o packages/binutils-2.42.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl -L <span class=s1>&#39;https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.30.tar.xz&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o packages/linux-6.6.30.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl -L <span class=s1>&#39;https://ftpmirror.gnu.org/glibc/glibc-2.39.tar.xz&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o packages/glibc-2.39.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl -L <span class=s1>&#39;https://ftpmirror.gnu.org/gcc/gcc-14.1.0/gcc-14.1.0.tar.xz&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o packages/gcc-14.1.0.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl -L <span class=s1>&#39;https://github.com/besser82/libxcrypt/releases/download/v4.4.36/libxcrypt-4.4.36.tar.xz&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o packages/libxcrypt-4.4.36.tar.xz
+</span></span></code></pre></td></tr></table></div></div><p>The layout in the disk:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>packages/
+</span></span><span class=line><span class=cl><span class=p>|</span>-- binutils-2.42.tar.xz
+</span></span><span class=line><span class=cl><span class=p>|</span>-- gcc-14.1.0.tar.xz
+</span></span><span class=line><span class=cl><span class=p>|</span>-- glibc-2.39.tar.xz
+</span></span><span class=line><span class=cl><span class=p>|</span>-- libxcrypt-4.4.36.tar.xz
+</span></span><span class=line><span class=cl><span class=sb>`</span>-- linux-6.6.30.tar.xz
+</span></span></code></pre></td></tr></table></div></div><p>Extract all sources.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>find packages/ -mindepth <span class=m>1</span> -exec tar -Jxf <span class=o>{}</span> <span class=se>\;</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Layout</span>
+</span></span><span class=line><span class=cl>.
+</span></span><span class=line><span class=cl><span class=p>|</span>-- binutils-2.42
+</span></span><span class=line><span class=cl><span class=p>|</span>-- gcc-14.1.0
+</span></span><span class=line><span class=cl><span class=p>|</span>-- glibc-2.39
+</span></span><span class=line><span class=cl><span class=p>|</span>-- libxcrypt-4.4.36
+</span></span><span class=line><span class=cl><span class=p>|</span>-- linux-6.6.30
+</span></span><span class=line><span class=cl><span class=sb>`</span>-- packages
+</span></span></code></pre></td></tr></table></div></div><h2 id=overview>Overview</h2><ol><li><p>Build and install cross GCC toolchain (<strong>NOTE</strong>: the <em><strong>corss</strong></em> here is not accurate, because the target architecture is
+the same as the build one).</p><ul><li>Build and install cross Binutils.</li><li>Install Linux Kernel headers.</li><li>Build stage1 cross GCC<ul><li>Build and install <code>gcc</code></li></ul></li><li>Build stage1 glibc<ul><li>Build and install headers <code>stubs.h</code> and libraries <code>crt1.o</code> <code>crti.o</code> <code>crtn.o</code> <code>libc.so</code> &mldr;</li></ul></li><li>Build stage2 cross GCC<ul><li>Build and install <code>libgcc</code></li></ul></li><li>Build and install final glibc</li><li>Build and install final cross GCC</li></ul></li><li><p>Build final GCC toolchain by the cross GCC toolchain.</p></li><li><p>Build and install libxcrypt by the final GCC toolchain.</p></li></ol><h2 id=environment>Environment</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>export</span> <span class=nv>PREFIX</span><span class=o>=</span><span class=s1>&#39;/opt/toolchain&#39;</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>TARGET</span><span class=o>=</span><span class=s1>&#39;x86_64-linux-gnu&#39;</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>CROSS_PREFIX</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/cross&#34;</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>TARGET_PREFIX</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>CROSS_PREFIX</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>ARCH</span><span class=o>=</span><span class=s1>&#39;x86&#39;</span>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/opt/toolchain/bin:/opt/toolchain/cross/bin:</span><span class=si>${</span><span class=nv>PATH</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>NOTE</strong>: The path <code>/opt/toolchain/cross</code> is temporary and will be removed after setting all up. The final path is
+<code>/opt/toolchain</code>.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>mkdir -p <span class=s2>&#34;</span><span class=si>${</span><span class=nv>CROSS_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>ln -snf .. <span class=s2>&#34;</span><span class=si>${</span><span class=nv>CROSS_PREFIX</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mkdir -p <span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>/lib&#34;</span>
+</span></span><span class=line><span class=cl>ln -snf <span class=s2>&#34;lib&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>/lib64&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Layout</span>
+</span></span><span class=line><span class=cl>/opt/
+</span></span><span class=line><span class=cl><span class=sb>`</span>-- toolchain
+</span></span><span class=line><span class=cl>    <span class=p>|</span>-- cross
+</span></span><span class=line><span class=cl>    <span class=p>|</span>   <span class=sb>`</span>-- x86_64-linux-gnu -&gt; ..
+</span></span><span class=line><span class=cl>    <span class=p>|</span>-- lib
+</span></span><span class=line><span class=cl>    <span class=sb>`</span>-- lib64 -&gt; lib
+</span></span></code></pre></td></tr></table></div></div><h1 id=build-and-install-cross-gcc-toolchain>Build and install cross GCC toolchain</h1><ol><li>Build and install cross Binutils.</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> binutils-2.42
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>./configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>CROSS_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --target<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>We specified <code>x86_64-linux-gnu</code> as the target system type.</li><li><code>--disable-multilib</code> means that we only want our Binutils installation to work with programs and libraries using the
+64-bits instruction set.</li></ul><ol start=2><li>Install Linux Kernel headers.</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> linux-6.6.30
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make <span class=nv>ARCH</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>ARCH</span><span class=si>}</span><span class=s2>&#34;</span> <span class=nv>INSTALL_HDR_PATH</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> headers_install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>We installed the headers to <code>/opt/toolchain/include</code>.</li></ul><ol start=3><li>Build stage1 cross GCC</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> gcc-14.1.0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Download prerequisites</span>
+</span></span><span class=line><span class=cl>contrib/download_prerequisites
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mkdir build
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>../configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>CROSS_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --target<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --libdir<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>/lib&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --libexecdir<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>/libexec&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --with-local-prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --with-gxx-include-dir<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>/include/c++&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-languages<span class=o>=</span>c,c++ <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-default-pie <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libssp <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-threads <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libatomic <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libffi <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libgomp <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libitm <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libquadmath <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libquadmath-support <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-libsanitizer <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-bootstrap
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span> all-gcc
+</span></span><span class=line><span class=cl>make install-gcc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>We specified <code>x86_64-linux-gnu</code> as the target system type.</li><li>We installed the executables to <code>/opt/toolchain/cross/bin</code> and installed headers and libraries to <code>/opt/toolchain/include</code>
+and <code>/opt/toolchain/lib</code> respectively.</li><li>We enabled <code>C</code> and <code>C++</code> and disabled many libraries to accelerate the build time.</li></ul><ol start=4><li>Build stage1 glibc</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> glibc-2.39
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mkdir build
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>../configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --build<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>MACHTYPE</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --host<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --target<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --with-headers<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>/include <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=nv>libc_cv_forced_unwind</span><span class=o>=</span>yes
+</span></span><span class=line><span class=cl>make install-bootstrap-headers<span class=o>=</span>yes install-headers
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span> csu/subdir_lib
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>install csu/crt1.o csu/crti.o csu/crtn.o <span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>/lib
+</span></span><span class=line><span class=cl><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>-gcc&#34;</span> -nostdlib -nostartfiles -shared -x c /dev/null -o <span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>/lib/libc.so
+</span></span><span class=line><span class=cl>touch <span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET_PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>/include/gnu/stubs.h
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li>We installed the libraries to <code>/opt/toolchain/lib</code>.</li><li>We installed the C library’s startup files, <code>crt1.o</code>, <code>crti.o</code> and <code>crtn.o</code> to the installation directory manually.
+There’s doesn’t seem to a make rule that does this without having other side effects.</li><li>We created a couple of dummy files, <code>libc.so</code> and <code>stubs.h</code>, which are expected in step <code>#5</code>, but which will be
+replaced by step <code>#6</code>.</li></ul><ol start=5><li>Build stage2 cross GCC</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> gcc-14.1.0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span> all-target-libgcc
+</span></span><span class=line><span class=cl>make install-target-libgcc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=6><li>Build and install final glibc</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> glibc-2.39
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=7><li>Build and install final cross GCC</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> gcc-14.1.0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=validation>Validation</h2><p>Now, we have a corss GCC toolchain, we can test the toolchain whether it works as expect.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-hello.cc data-lang=hello.cc><span class=line><span class=cl><span class=cp>#include</span> <span class=cpf>&lt;iostream&gt;</span><span class=cp>
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=k>auto</span> <span class=nf>main</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kt>int</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=n>std</span><span class=o>::</span><span class=n>cout</span> <span class=o>&lt;&lt;</span> <span class=s>&#34;Hello, world!&#34;</span> <span class=o>&lt;&lt;</span> <span class=n>std</span><span class=o>::</span><span class=n>endl</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ x86_64-linux-gnu-g++ -Wl,-rpath,/opt/toolchain/lib <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -Wl,-dynamic-linker,/opt/toolchain/lib/ld-linux-x86-64.so.2 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    hello.cc -o hello
+</span></span><span class=line><span class=cl>$ ./hello
+</span></span><span class=line><span class=cl>Hello, world!
+</span></span></code></pre></td></tr></table></div></div><p>It works!</p><h1 id=build-final-gcc-toolchain-by-the-cross-gcc-toolchain>Build final GCC toolchain by the cross GCC toolchain.</h1><ol><li>Build and install final Binutils.</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>rm -rf binutils-2.42
+</span></span><span class=line><span class=cl>tar -Jxf packages/binutils-2.42.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>pushd</span> binutils-2.42
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>LDFLAGS</span><span class=o>=</span><span class=s2>&#34;-L</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib -Wl,-rpath,</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib \
+</span></span></span><span class=line><span class=cl><span class=s2>    -Wl,-dynamic-linker,</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib&#34;</span> -name <span class=s1>&#39;ld-linux-*&#39;</span><span class=k>)</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    ./configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --host<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-gold <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-plugins <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install-strip
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Remove the old files</span>
+</span></span><span class=line><span class=cl>rm -rf <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib/ldscripts&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=2><li>Build and install final GCC</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>rm -rf gcc-14.1.0
+</span></span><span class=line><span class=cl>tar -Jxf packages/gcc-14.1.0.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Download prerequisites</span>
+</span></span><span class=line><span class=cl><span class=nb>pushd</span> gcc-14.1.0
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>contrib/download_prerequisites
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mkdir build
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>ldflags</span><span class=o>=</span><span class=s2>&#34;-L</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib -Wl,-rpath,</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib \
+</span></span></span><span class=line><span class=cl><span class=s2>    -Wl,-dynamic-linker,</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib&#34;</span> -name <span class=s1>&#39;ld-linux-*&#39;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>LDFLAGS</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>ldflags</span><span class=si>}</span><span class=s2>&#34;</span> <span class=nv>LDFLAGS_FOR_TARGET</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>ldflags</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    ../configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --host<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>TARGET</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --with-local-prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-languages<span class=o>=</span>c,c++ <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --enable-default-pie <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make <span class=nv>BOOT_LDFLAGS</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>ldflags</span><span class=si>}</span><span class=s2>&#34;</span> -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Remove the old files</span>
+</span></span><span class=line><span class=cl>rm -rf <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/include/c++&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>make install-strip
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=3><li>Build and install final glibc</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>rm -rf glibc-2.39
+</span></span><span class=line><span class=cl>tar -Jxf packages/glibc-2.39.tar.xz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>pushd</span> glibc-2.39
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mkdir build
+</span></span><span class=line><span class=cl><span class=nb>cd</span> build
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>../configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --with-headers<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>/include <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --disable-multilib
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><ol start=4><li>Build and install libxcrypt</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nb>pushd</span> libxcrypt-4.4.36
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>./configure --prefix<span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make -j <span class=s2>&#34;</span><span class=k>$(</span>nproc<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>rm -rf <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PREFIX</span><span class=si>}</span><span class=s2>/lib/pkgconfig&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>popd</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=use-the-gcc-toolchain-seamlessly>Use the GCC toolchain seamlessly</h1><p>We can use the GCC toolchain like this.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ g++ -Wl,-rpath,/opt/toolchain/lib <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -Wl,-dynamic-linker,/opt/toolchain/lib/ld-linux-x86-64.so.2 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    hello.cc -o hello
+</span></span><span class=line><span class=cl>$ ./hello
+</span></span><span class=line><span class=cl>Hello, world!
+</span></span></code></pre></td></tr></table></div></div><p>However, it is verbose. We can use GCC specs file to simplify the usage.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=nv>toolchain_home</span><span class=o>=</span><span class=s1>&#39;/opt/toolchain&#39;</span>
+</span></span><span class=line><span class=cl><span class=nv>interpreter</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>toolchain_home</span><span class=si>}</span><span class=s2>&#34;</span> -name <span class=s2>&#34;ld-linux-*&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>filename</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>basename <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>dirname</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s2>&#34;</span><span class=si>${</span><span class=nv>toolchain_home</span><span class=si>}</span><span class=s2>/bin/gcc&#34;</span> -dumpspecs <span class=p>|</span> sed <span class=s2>&#34;{
+</span></span></span><span class=line><span class=cl><span class=s2>    s/:\([^;}:]*\)\/\(</span><span class=si>${</span><span class=nv>filename</span><span class=p>/.so*/</span><span class=si>}</span><span class=s2>\)/:</span><span class=si>${</span><span class=nv>dirname</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>\/\2/g
+</span></span></span><span class=line><span class=cl><span class=s2>    s/collect2/collect2 -rpath </span><span class=si>${</span><span class=nv>dirname</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>/
+</span></span></span><span class=line><span class=cl><span class=s2>}&#34;</span> &gt;<span class=s2>&#34;</span><span class=si>${</span><span class=nv>toolchain_home</span><span class=si>}</span><span class=s2>/lib/gcc/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/specs&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=validation-1>Validation</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ gcc -v
+</span></span><span class=line><span class=cl>Using built-in specs.
+</span></span><span class=line><span class=cl>Reading specs from /opt/toolchain/lib/gcc/x86_64-linux-gnu/specs
+</span></span><span class=line><span class=cl><span class=nv>COLLECT_GCC</span><span class=o>=</span>gcc
+</span></span><span class=line><span class=cl><span class=nv>COLLECT_LTO_WRAPPER</span><span class=o>=</span>/opt/toolchain/libexec/gcc/x86_64-linux-gnu/14.1.0/lto-wrapper
+</span></span><span class=line><span class=cl>Target: x86_64-linux-gnu
+</span></span><span class=line><span class=cl>Configured with: ../configure --prefix<span class=o>=</span>/opt/toolchain --host<span class=o>=</span>x86_64-linux-gnu --with-local-prefix<span class=o>=</span>/opt/toolchain --enable-languages<span class=o>=</span>c,c++ --enable-default-pie --disable-multilib
+</span></span><span class=line><span class=cl>Thread model: posix
+</span></span><span class=line><span class=cl>Supported LTO compression algorithms: zlib
+</span></span><span class=line><span class=cl>gcc version 14.1.0 <span class=o>(</span>GCC<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>Now, <code>GCC</code> uses the specs file <code>/opt/toolchain/lib/gcc/x86_64-linux-gnu/specs</code> which was created by us.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ g++ hello.cc -o hello
+</span></span><span class=line><span class=cl>$ ./hello
+</span></span><span class=line><span class=cl>Hello, world!
+</span></span></code></pre></td></tr></table></div></div><p>It works!</p><h1 id=make-gcc-toolchain-portable-by-patchelf>Make GCC toolchain portable by patchelf</h1><p>So far, we have built our GCC toolchain. In this section, we use <code>patchelf</code> to make the toolchain portable.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>mkdir -p /opt/patchelf
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>curl -L <span class=s2>&#34;https://github.com/NixOS/patchelf/releases/download/0.16.1/patchelf-0.16.1-</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>.tar.gz&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -o - <span class=p>|</span> tar -zxv -C /opt/patchelf
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/opt/patchelf/bin:</span><span class=si>${</span><span class=nv>PATH</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>We move the GCC toolchain to a different location to pretend that we extracted the toolchain to a new machine.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>mv /opt/toolchain /root/
+</span></span></code></pre></td></tr></table></div></div><p>We will find the executable <code>GCC</code> can&rsquo;t be executed.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ <span class=nb>cd</span> /root/toolchain/bin
+</span></span><span class=line><span class=cl>$ ./gcc --version
+</span></span><span class=line><span class=cl>bash: ./gcc: No such file or directory
+</span></span></code></pre></td></tr></table></div></div><p>We can use the tool <code>patchelf</code> to fix this issue.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ patchelf --set-rpath /root/toolchain/lib gcc
+</span></span><span class=line><span class=cl>$ patchelf --set-interpreter /root/toolchain/lib/ld-linux-x86-64.so.2 gcc
+</span></span><span class=line><span class=cl>$ ./gcc --version
+</span></span><span class=line><span class=cl>gcc <span class=o>(</span>GCC<span class=o>)</span> 14.1.0
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>C<span class=o>)</span> <span class=m>2024</span> Free Software Foundation, Inc.
+</span></span><span class=line><span class=cl>This is free software<span class=p>;</span> see the <span class=nb>source</span> <span class=k>for</span> copying conditions.  There is NO
+</span></span><span class=line><span class=cl>warranty<span class=p>;</span> not even <span class=k>for</span> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+</span></span></code></pre></td></tr></table></div></div><p>For the sake of convenience, we can use the following function.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=k>function</span> relocate<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> opts
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>overwrite</span><span class=o>=</span><span class=nb>false</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> ! <span class=nv>opts</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>getopt -o <span class=s1>&#39;&#39;</span> -l <span class=s1>&#39;overwrite&#39;</span> -- <span class=s2>&#34;</span><span class=si>${</span><span class=p>@</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=nb>eval</span> <span class=s2>&#34;set -- </span><span class=si>${</span><span class=nv>opts</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>while</span> true<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>		<span class=k>case</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>1</span><span class=si>}</span><span class=s2>&#34;</span> in
+</span></span><span class=line><span class=cl>		--overwrite<span class=o>)</span>
+</span></span><span class=line><span class=cl>			<span class=nv>overwrite</span><span class=o>=</span><span class=nb>true</span>
+</span></span><span class=line><span class=cl>			<span class=nb>shift</span>
+</span></span><span class=line><span class=cl>			<span class=p>;;</span>
+</span></span><span class=line><span class=cl>		--<span class=o>)</span>
+</span></span><span class=line><span class=cl>			<span class=nb>shift</span>
+</span></span><span class=line><span class=cl>			<span class=nb>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>;;</span>
+</span></span><span class=line><span class=cl>		*<span class=o>)</span>
+</span></span><span class=line><span class=cl>			<span class=nb>echo</span> <span class=s1>&#39;Invalid arguments&#39;</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>			<span class=p>;;</span>
+</span></span><span class=line><span class=cl>		<span class=k>esac</span>
+</span></span><span class=line><span class=cl>	<span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>search_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>1</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>base_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>2</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> libc_so
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> library_path
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> interpreter
+</span></span><span class=line><span class=cl>	<span class=nv>libc_so</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>search_path</span><span class=si>}</span><span class=s2>&#34;</span> -name <span class=s1>&#39;libc.so.6&#39;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nv>library_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=si>${</span><span class=nv>libc_so</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nv>interpreter</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>search_path</span><span class=si>}</span><span class=s2>&#34;</span> -name <span class=s1>&#39;ld-linux-*.so.*&#39;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> old_rpath
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> new_rpath
+</span></span><span class=line><span class=cl>	<span class=k>while</span> <span class=nb>read</span> -r file<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nv>old_rpath</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>patchelf --print-rpath <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span> 2&gt;/dev/null<span class=k>)</span><span class=s2>&#34;</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=si>${</span><span class=nv>overwrite</span><span class=si>}</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>				<span class=nv>old_rpath</span><span class=o>=</span><span class=s2>&#34;\$ORIGIN:\$ORIGIN/lib:\$ORIGIN/lib64:\$ORIGIN/../lib:\$ORIGIN/../lib64&#34;</span>
+</span></span><span class=line><span class=cl>			<span class=k>fi</span>
+</span></span><span class=line><span class=cl>			<span class=nv>new_rpath</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>old_rpath</span><span class=p>:+</span><span class=si>${</span><span class=nv>old_rpath</span><span class=si>}</span><span class=p>:</span><span class=si>}${</span><span class=nv>library_path</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>			patchelf --set-rpath <span class=s2>&#34;</span><span class=si>${</span><span class=nv>new_rpath</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> readelf -S <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span> <span class=p>|</span> grep <span class=s1>&#39;.interp&#39;</span> &gt;/dev/null<span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>				patchelf --set-interpreter <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>			<span class=k>fi</span>
+</span></span><span class=line><span class=cl>		<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=k>done</span> &lt; &lt;<span class=o>(</span>find <span class=s2>&#34;</span><span class=k>$(</span>readlink -f <span class=s2>&#34;</span><span class=si>${</span><span class=nv>base_path</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span> -type f<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ ./g++ --version
+</span></span><span class=line><span class=cl>bash: ./g++: No such file or directory
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ relocate --overwrite /root/toolchain g++
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ patchelf --print-rpath g++
+</span></span><span class=line><span class=cl><span class=nv>$ORIGIN</span>:<span class=nv>$ORIGIN</span>/lib:<span class=nv>$ORIGIN</span>/lib64:<span class=nv>$ORIGIN</span>/../lib:<span class=nv>$ORIGIN</span>/../lib64:/root/toolchain/lib
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ patchelf --print-interpreter g++
+</span></span><span class=line><span class=cl>/root/toolchain/lib/ld-linux-x86-64.so.2
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ./g++ --version
+</span></span><span class=line><span class=cl>g++ <span class=o>(</span>GCC<span class=o>)</span> 14.1.0
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>C<span class=o>)</span> <span class=m>2024</span> Free Software Foundation, Inc.
+</span></span><span class=line><span class=cl>This is free software<span class=p>;</span> see the <span class=nb>source</span> <span class=k>for</span> copying conditions.  There is NO
+</span></span><span class=line><span class=cl>warranty<span class=p>;</span> not even <span class=k>for</span> MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+</span></span></code></pre></td></tr></table></div></div><p>Next, we fix the whole GCC toolchain by apply the following function.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=k>function</span> configure_toolchain<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>PATCHELF</span><span class=o>=</span><span class=s1>&#39;patchelf&#39;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>LIBC_SO</span><span class=o>=</span><span class=s1>&#39;libc.so.6&#39;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>INTERPRETER</span><span class=o>=</span><span class=s1>&#39;ld-linux-*&#39;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>READELF</span><span class=o>=</span><span class=s1>&#39;readelf&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>prefix</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>1</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> -e <span class=s1>&#39;Configuring the toolchain...&#39;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> ! <span class=nb>cd</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>prefix</span><span class=si>}</span><span class=s2>&#34;</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> -e <span class=s2>&#34;Failed to change the current directory to \033[34;1m</span><span class=si>${</span><span class=nv>prefix</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>TOOLCHAIN_DIRNAME</span><span class=si>}</span><span class=s2>\033[0m .&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> patchelf
+</span></span><span class=line><span class=cl>	<span class=nv>patchelf</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span><span class=nb>command</span> -v <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PATCHELF</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=o>[[</span> ! -f <span class=s2>&#34;</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> -e <span class=s2>&#34;Failed to find the tool \033[34;1m</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>\033[0m .&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> -e <span class=s2>&#34;Program </span><span class=si>${</span><span class=nv>PATCHELF</span><span class=si>}</span><span class=s2> was found: \033[34;1m</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>readelf</span><span class=o>=</span><span class=s2>&#34;/usr/bin/readelf&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=o>[[</span> ! -f <span class=s2>&#34;</span><span class=si>${</span><span class=nv>readelf</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> -e <span class=s2>&#34;Failed to find the tool \033[34;1m</span><span class=si>${</span><span class=nv>readelf</span><span class=si>}</span><span class=s2>\033[0m .&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> -e <span class=s2>&#34;Program </span><span class=si>${</span><span class=nv>READELF</span><span class=si>}</span><span class=s2> was found: \033[34;1m</span><span class=si>${</span><span class=nv>readelf</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> interpreter
+</span></span><span class=line><span class=cl>	<span class=k>if</span> ! <span class=nv>interpreter</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span> -name <span class=s2>&#34;</span><span class=si>${</span><span class=nv>INTERPRETER</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span> <span class=o>||</span> <span class=o>[[</span> -z <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> -e <span class=s2>&#34;Failed to find the interpreter \033[34;1m</span><span class=si>${</span><span class=nv>INTERPRETER</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> -e <span class=s2>&#34;Interpreter was found: \033[34;1m</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> libc_so
+</span></span><span class=line><span class=cl>	<span class=k>if</span> ! <span class=nv>libc_so</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>find <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span> -name <span class=s2>&#34;</span><span class=si>${</span><span class=nv>LIBC_SO</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span> <span class=o>||</span> <span class=o>[[</span> -z <span class=s2>&#34;</span><span class=si>${</span><span class=nv>libc_so</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> -e <span class=s2>&#34;Failed to find the library \033[34;1m</span><span class=si>${</span><span class=nv>LIBC_SO</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=nb>echo</span> -e <span class=s2>&#34;Library was found: \033[34;1m</span><span class=si>${</span><span class=nv>libc_so</span><span class=si>}</span><span class=s2>\033[0m&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1># Remove useless files</span>
+</span></span><span class=line><span class=cl>	rm -rf <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu&#34;</span>/*
+</span></span><span class=line><span class=cl>	find <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span> -name <span class=s1>&#39;*.la&#39;</span> -delete
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	mkdir <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/include&#34;</span>
+</span></span><span class=line><span class=cl>	mkdir <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/lib&#34;</span>
+</span></span><span class=line><span class=cl>	ln -snf lib <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/lib64&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1># Link headers</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> include_path
+</span></span><span class=line><span class=cl>	<span class=nv>include_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/include&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>pushd</span> <span class=s2>&#34;</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/include&#34;</span> &gt;/dev/null <span class=o>||</span> <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>	<span class=k>while</span> <span class=nb>read</span> -r path<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>		<span class=nb>local</span> <span class=nv>absolute_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=si>${</span><span class=nv>include_path</span><span class=si>}</span><span class=s2>/</span><span class=si>${</span><span class=nv>path</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=o>[[</span> -d <span class=s2>&#34;</span><span class=si>${</span><span class=nv>absolute_path</span><span class=si>}</span><span class=s2>&#34;</span> <span class=o>]]</span><span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>			mkdir -p <span class=s2>&#34;</span><span class=si>${</span><span class=nv>path</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=k>else</span>
+</span></span><span class=line><span class=cl>			ln -snf <span class=s2>&#34;</span><span class=si>${</span><span class=nv>absolute_path</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>path</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=k>done</span> &lt; &lt;<span class=o>(</span>find <span class=s2>&#34;</span><span class=si>${</span><span class=nv>include_path</span><span class=si>}</span><span class=s2>&#34;</span> -mindepth <span class=m>1</span> -printf <span class=s1>&#39;%P\n&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>	<span class=nb>popd</span> &gt;/dev/null <span class=o>||</span> <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> <span class=nv>rpaths</span><span class=o>=(</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;\$ORIGIN&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;\$ORIGIN/lib&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;\$ORIGIN/lib64&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;\$ORIGIN/../lib&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;\$ORIGIN/../lib64&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/lib&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=si>${</span><span class=nv>libc_so</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=o>)</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> rpaths_in_line
+</span></span><span class=line><span class=cl>	<span class=nv>rpaths_in_line</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>
+</span></span><span class=line><span class=cl>		<span class=nv>IFS</span><span class=o>=</span><span class=s1>&#39;:&#39;</span>
+</span></span><span class=line><span class=cl>		<span class=nb>echo</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>rpaths</span><span class=p>[*]</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>while</span> <span class=nb>read</span> -r file<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> ! file <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span> <span class=p>|</span> grep ELF &gt;/dev/null<span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>			<span class=k>continue</span>
+</span></span><span class=line><span class=cl>		<span class=k>fi</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>&#34;</span> --set-rpath <span class=s2>&#34;</span><span class=si>${</span><span class=nv>rpaths_in_line</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>readelf</span><span class=si>}</span><span class=s2>&#34;</span> -S <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span> <span class=p>|</span> grep <span class=s1>&#39;.interp&#39;</span> &gt;/dev/null<span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>			<span class=s2>&#34;</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>&#34;</span> --set-interpreter <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=k>fi</span>
+</span></span><span class=line><span class=cl>	<span class=k>done</span> &lt; &lt;<span class=o>(</span>
+</span></span><span class=line><span class=cl>		find <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span> -type f ! -name <span class=s1>&#39;*.o&#39;</span> ! -name <span class=s1>&#39;*.a&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>			! -name <span class=s2>&#34;</span><span class=si>${</span><span class=nv>PATCHELF</span><span class=si>}</span><span class=s2>&#34;</span> ! -name <span class=s2>&#34;</span><span class=si>${</span><span class=nv>INTERPRETER</span><span class=si>}</span><span class=s2>&#34;</span> ! -name <span class=s2>&#34;</span><span class=si>${</span><span class=nv>LIBC_SO</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=o>)</span>
+</span></span><span class=line><span class=cl>	<span class=s2>&#34;</span><span class=si>${</span><span class=nv>patchelf</span><span class=si>}</span><span class=s2>&#34;</span> --set-interpreter <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>libc_so</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nb>pushd</span> bin &gt;/dev/null <span class=o>||</span> <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>	ln -snf gcc cc
+</span></span><span class=line><span class=cl>	<span class=nb>popd</span> &gt;/dev/null <span class=o>||</span> <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1># Modify files</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> current_path
+</span></span><span class=line><span class=cl>	<span class=nv>current_path</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>while</span> <span class=nb>read</span> -r file<span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>		sed -i <span class=s2>&#34;s/\/opt\/toolchain/</span><span class=si>${</span><span class=nv>current_path</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>/g&#34;</span> <span class=s2>&#34;</span><span class=si>${</span><span class=nv>file</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=k>done</span> &lt; &lt;<span class=o>(</span>
+</span></span><span class=line><span class=cl>		find . -type f -exec grep -E -I -l <span class=s1>$&#39;[=\&#39;&#34; ]/opt/toolchain&#39;</span> <span class=o>{}</span> <span class=se>\;</span>
+</span></span><span class=line><span class=cl>	<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1># Modify ldd</span>
+</span></span><span class=line><span class=cl>	sed -i <span class=s2>&#34;/RTLDLIST=/s/</span><span class=si>${</span><span class=nv>current_path</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>//g&#34;</span> bin/ldd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1># Configure gcc specs</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> filename
+</span></span><span class=line><span class=cl>	<span class=nv>filename</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>basename <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nb>local</span> dirname
+</span></span><span class=line><span class=cl>	<span class=nv>dirname</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/bin/gcc&#34;</span> -dumpspecs <span class=p>|</span> sed <span class=s2>&#34;{
+</span></span></span><span class=line><span class=cl><span class=s2>		s/:\([^;}:]*\)\/\(</span><span class=si>${</span><span class=nv>filename</span><span class=p>/.so*/</span><span class=si>}</span><span class=s2>\)/:</span><span class=si>${</span><span class=nv>dirname</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>\/\2/g
+</span></span></span><span class=line><span class=cl><span class=s2>		s/collect2/collect2 -rpath </span><span class=si>${</span><span class=nv>rpaths_in_line</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>/
+</span></span></span><span class=line><span class=cl><span class=s2>	}&#34;</span> &gt;<span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/lib/gcc/specs&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ configure_toolchain /root/toolchain
+</span></span></code></pre></td></tr></table></div></div><h2 id=validation-2>Validation</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ <span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/root/toolchain/bin:</span><span class=si>${</span><span class=nv>PATH</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>$ <span class=nb>cd</span> /root/
+</span></span><span class=line><span class=cl>$ g++ hello.cc -o hello
+</span></span><span class=line><span class=cl>$ ./hello
+</span></span><span class=line><span class=cl>Hello, world!
+</span></span></code></pre></td></tr></table></div></div><p>It works!</p><h1 id=use-the-all-in-one-script>Use the all-in-one script</h1><p>I made an all-in-one script to install a portable GCC toolchain. See <a href=https://github.com/adonis0147/devel-env/releases>the release page</a>.</p><h2 id=example>Example</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>curl -LO <span class=s1>&#39;https://github.com/adonis0147/devel-env/releases/download/v2024.05/install_toolchain_x86_64.sh&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>bash install_toolchain_x86_64.sh /root
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=s2>&#34;/root/compiler/bin:</span><span class=si>${</span><span class=nv>PATH</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><h1 id=references>References</h1><ol><li><a href=https://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/>How to Build a GCC Cross-Compiler</a></li></ol></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
+<span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
+<span class=item-content>2024-05-26
+<a href=https://github.com/adonis0147/adonis0147.github.io/commit/eec83c894539e78617156f1b6189522ef85468ec title="Publish a post: portable-gcc-toolchain.md">(eec83c8)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/gcc/>GCC</a>
+<a href=/tags/x86_64/>x86_64</a>
+<a href=/tags/aarch64/>aarch64</a></div><nav class=post-nav><a class=next href=/post/hello_x86_64_assembly/><span class="next-text nav-default">Hello x86-64 Assembly</span>
+<span class="next-text nav-mobile">Next</span>
+<i class="iconfont icon-right"></i></a></nav></footer></article></div><script src=https://utteranc.es/client.js repo=adonis0147/adonis0147.github.io issue-term=pathname theme=github-light crossorigin=anonymous async></script><noscript>Please enable JavaScript to view the <a href=https://github.com/utterance>comments powered by utterances.</a></noscript></div></main><footer id=footer class=footer><div class=social-links><a href=mailto:adonis0147@gmail.com class="iconfont icon-email" title=email></a><a href=https://github.com/adonis0147 class="iconfont icon-github" title=github></a></div><div class=copyright><span class=power-by>Powered by <a class=hexo-link href=https://gohugo.io>Hugo</a>
+</span><span class=division>|</span>
+<span class=theme-info>Theme -
+<a class=theme-link href=https://github.com/olOwOlo/hugo-theme-even>Even</a></span><div class=busuanzi-footer><span id=busuanzi_container_site_pv>site pv: <span id=busuanzi_value_site_pv><img src=/img/spinner.svg alt=spinner.svg></span> </span><span class=division>|</span>
+<span id=busuanzi_container_site_uv>site uv: <span id=busuanzi_value_site_uv><img src=/img/spinner.svg alt=spinner.svg></span></span></div><span class=copyright-year>&copy;
+2022 -
+2024<span class=heart><i class="iconfont icon-heart"></i></span><span>Adonis Ling</span></span></div></footer><div class=back-to-top id=back-to-top><i class="iconfont icon-up"></i></div></div><script src=https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/slideout@1.0.1/dist/slideout.min.js integrity="sha256-t+zJ/g8/KXIJMjSVQdnibt4dlaDxc9zXr/9oNPeWqdg=" crossorigin=anonymous></script><script src=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.js integrity="sha256-XVLffZaxoWfGUEbdzuLi7pwaUJv1cecsQJQqGLe7axY=" crossorigin=anonymous></script><script type=text/javascript src=/js/main.min.4ae89da218555efa0e7093a20b92017d2e1202b66fff9fc2edf4cb8d44b44c6e.js></script></body></html>
