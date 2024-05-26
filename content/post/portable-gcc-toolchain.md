@@ -1,7 +1,7 @@
 ---
 title: "Build a Portable GCC Toolchain"
 date: 2024-05-09T16:49:12+08:00
-draft: true
+draft: false
 summary: A guide to build a portable GCC toolchain
 tags: ["GCC", "x86_64", "aarch64"]
 categories: ["English"]
@@ -30,6 +30,8 @@ and [use it](/post/portable-gcc-toolchain/#use-the-all-in-one-script).
 ```shell
 # Use ubuntu:22.04 image
 docker run -it ubuntu:22.04 bash
+
+cd /root
 
 apt update && apt upgrade --yes
 
@@ -71,7 +73,9 @@ Extract all sources.
 
 ```shell
 find packages/ -mindepth 1 -exec tar -Jxf {} \;
+```
 
+```shell
 # Layout
 .
 |-- binutils-2.42
@@ -121,7 +125,9 @@ ln -snf .. "${CROSS_PREFIX}/${TARGET}"
 
 mkdir -p "${TARGET_PREFIX}/lib"
 ln -snf "lib" "${TARGET_PREFIX}/lib64"
+```
 
+```shell
 # Layout
 /opt/
 `-- toolchain
@@ -705,5 +711,5 @@ export PATH="/root/compiler/bin:${PATH}"
 
 # References
 
-[How to Build a GCC Cross-Compiler](https://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/)
+1. [How to Build a GCC Cross-Compiler](https://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/)
 
