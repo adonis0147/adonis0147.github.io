@@ -3,7 +3,7 @@ title: "Build a Portable GCC Toolchain"
 date: 2024-05-09T16:49:12+08:00
 draft: false
 summary: A guide to build a portable GCC toolchain
-tags: ["GCC", "x86_64", "aarch64"]
+tags: ["GCC", "x86-64", "aarch64"]
 categories: ["English"]
 ---
 
