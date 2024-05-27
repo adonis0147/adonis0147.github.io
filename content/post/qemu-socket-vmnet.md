@@ -35,6 +35,9 @@ brew install socket_vmnet
 brew tap homebrew/services
 # sudo is necessary for the next line
 sudo brew services start socket_vmnet
+
+# Export the environment variable
+export PATH="$(brew --prefix)/opt/socket_vmnet/bin:${PATH}"
 ```
 
 ## Test
@@ -67,7 +70,7 @@ sudo brew services restart socket_vmnet
 3. Boot QEMU to install Ubuntu.
 
     ```shell
-    socket_vmnet_client /opt/homebrew/var/run/socket_vmnet \
+    socket_vmnet_client "$(brew --prefix)/var/run/socket_vmnet" \
         qemu-system-aarch64 \
             -machine virt,accel=hvf \
             -cpu host \
@@ -83,7 +86,7 @@ sudo brew services restart socket_vmnet
 # Boot Ubuntu in QEMU
 
 ```shell
-socket_vmnet_client /opt/homebrew/var/run/socket_vmnet \
+socket_vmnet_client "$(brew --prefix)/var/run/socket_vmnet" \
     qemu-system-aarch64 \
         -machine virt,accel=hvf \
         -cpu host \
@@ -97,6 +100,33 @@ socket_vmnet_client /opt/homebrew/var/run/socket_vmnet \
 
 # Log into the server by SSH
 
-```shell
-ssh 192.168.105.2
-```
+1. Get the name of the network device.
+
+    ```shell
+    $ ip link
+
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+        link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
+    ```
+
+    We can see the name of the network device is `enp0s1`.
+
+2. Get the IP address.
+
+    ```shell
+    $ ip route
+
+    default via 192.168.105.1 dev enp0s1 proto dhcp src 192.168.105.2 metric 100
+    192.168.105.0/24 dev enp0s1 proto kernel scope link src 192.168.105.2 metric 100
+    192.168.105.1 dev enp0s1 proto dhcp scope link src 192.168.105.2 metric 100
+    ```
+
+    We can see the IP address is `192.168.105.2`.
+
+3. Log into the server
+
+    ```shell
+    ssh 192.168.105.2
+    ```
