@@ -21,6 +21,10 @@ jobs:
           git apply ../patch
           popd &>/dev/null
 
+          sed -i '1i \
+          {{ partial "custom_head.html" . }} \
+          ' themes/even/layouts/partials/head.html
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
