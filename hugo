@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -e
+
+SCRIPT_PATH="$(
+	cd "$(dirname BASH_SOURCE[0])"
+	pwd
+)"
+declare -r SCRIPT_PATH
+declare -r HUGO_PATH="${SCRIPT_PATH}/.hugo"
+
+function get_url() {
+	local version="${1}"
+	local kernel
+	kernel="$(uname -s)"
+
+	if [[ "${kernel}" == 'Darwin' ]]; then
+		echo "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_extended_${version}_darwin-universal.tar.gz"
+	else
+		local arch
+		arch="$(uname -m)"
+		if [[ "${arch}" == 'x86_64' ]]; then
+			arch='amd64'
+		else
+			arch='arm64'
+		fi
+
+		echo "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_${version}_linux-${arch}.tar.gz"
+	fi
+}
+
+function install_hugo() {
+	local version='0.131.0'
+
+	local current
+	current="$(hugo version 2>/dev/null | awk '{print $2}')"
+
+	if [[ "${current}" =~ "${version}"-* ]]; then
+		return
+	fi
+
+	local url
+	url="$(get_url "${version}")"
+
+	mkdir -p "${HUGO_PATH}"
+
+	echo "Download ${url}"
+	curl -L "${url}" -o - | tar -C "${HUGO_PATH}" -zxf -
+}
+
+function main() {
+	export PATH="${HUGO_PATH}:${PATH}"
+
+	install_hugo
+
+	hugo "${@}"
+}
+
+main "${@}"
