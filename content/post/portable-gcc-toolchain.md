@@ -420,8 +420,8 @@ filename="$(basename "${interpreter}")"
 dirname="$(dirname "${interpreter}")"
 
 "${toolchain_home}/bin/gcc" -dumpspecs | sed "{
-    s/:\([^;}:]*\)\/\(${filename/.so*/}\)/:${dirname//\//\\/}\/\2/g
-    s/collect2/collect2 -rpath ${dirname//\//\\/}/
+    s|:\([^;}:]*\)/\(${filename/.so*/}\)|:${dirname}/\2|g
+    s|collect2|collect2 -rpath ${dirname}|
 }" >"${toolchain_home}/lib/gcc/$(uname -m)-linux-gnu/specs"
 ```
 
@@ -531,9 +531,9 @@ function relocate() {
 	while read -r file; do
 		if old_rpath="$(patchelf --print-rpath "${file}" 2>/dev/null)"; then
 			if ${overwrite}; then
-				old_rpath="\$ORIGIN:\$ORIGIN/lib:\$ORIGIN/lib64:\$ORIGIN/../lib:\$ORIGIN/../lib64"
+				old_rpath="\$ORIGIN:\$ORIGIN/lib64:\$ORIGIN/lib:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 			fi
-			new_rpath="${old_rpath:+${old_rpath}:}${library_path}"
+			new_rpath="${library_path}${old_rpath:+:${old_rpath}}"
 			patchelf --set-rpath "${new_rpath}" "${file}"
 			if readelf -S "${file}" | grep '.interp' >/dev/null; then
 				patchelf --set-interpreter "${interpreter}" "${file}"
@@ -550,7 +550,7 @@ bash: ./g++: No such file or directory
 $ relocate --overwrite /root/toolchain g++
 
 $ patchelf --print-rpath g++
-$ORIGIN:$ORIGIN/lib:$ORIGIN/lib64:$ORIGIN/../lib:$ORIGIN/../lib64:/root/toolchain/lib
+/root/toolchain/lib:$ORIGIN:$ORIGIN/lib64:$ORIGIN/lib:$ORIGIN/../lib64:$ORIGIN/../lib
 
 $ patchelf --print-interpreter g++
 /root/toolchain/lib/ld-linux-x86-64.so.2
@@ -625,13 +625,13 @@ function configure_toolchain() {
 	popd >/dev/null || exit
 
 	local rpaths=(
-		"\$ORIGIN"
-		"\$ORIGIN/lib"
-		"\$ORIGIN/lib64"
-		"\$ORIGIN/../lib"
-		"\$ORIGIN/../lib64"
 		"$(pwd)/$(uname -m)-linux-gnu/lib"
 		"$(dirname "${libc_so}")"
+		"\$ORIGIN"
+		"\$ORIGIN/lib64"
+		"\$ORIGIN/lib"
+		"\$ORIGIN/../lib64"
+		"\$ORIGIN/../lib"
 	)
 	local rpaths_in_line
 	rpaths_in_line="$(
