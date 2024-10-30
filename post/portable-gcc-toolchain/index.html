@@ -506,8 +506,8 @@ replaced by step <code>#6</code>.</li></ul><ol start=5><li>Build stage2 cross GC
 </span></span><span class=line><span class=cl><span class=nv>dirname</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span>dirname <span class=s2>&#34;</span><span class=si>${</span><span class=nv>interpreter</span><span class=si>}</span><span class=s2>&#34;</span><span class=k>)</span><span class=s2>&#34;</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=s2>&#34;</span><span class=si>${</span><span class=nv>toolchain_home</span><span class=si>}</span><span class=s2>/bin/gcc&#34;</span> -dumpspecs <span class=p>|</span> sed <span class=s2>&#34;{
-</span></span></span><span class=line><span class=cl><span class=s2>    s/:\([^;}:]*\)\/\(</span><span class=si>${</span><span class=nv>filename</span><span class=p>/.so*/</span><span class=si>}</span><span class=s2>\)/:</span><span class=si>${</span><span class=nv>dirname</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>\/\2/g
-</span></span></span><span class=line><span class=cl><span class=s2>    s/collect2/collect2 -rpath </span><span class=si>${</span><span class=nv>dirname</span><span class=p>//</span><span class=se>\/</span><span class=p>/</span><span class=se>\\</span><span class=p>/</span><span class=si>}</span><span class=s2>/
+</span></span></span><span class=line><span class=cl><span class=s2>    s|:\([^;}:]*\)/\(</span><span class=si>${</span><span class=nv>filename</span><span class=p>/.so*/</span><span class=si>}</span><span class=s2>\)|:</span><span class=si>${</span><span class=nv>dirname</span><span class=si>}</span><span class=s2>/\2|g
+</span></span></span><span class=line><span class=cl><span class=s2>    s|collect2|collect2 -rpath </span><span class=si>${</span><span class=nv>dirname</span><span class=si>}</span><span class=s2>|
 </span></span></span><span class=line><span class=cl><span class=s2>}&#34;</span> &gt;<span class=s2>&#34;</span><span class=si>${</span><span class=nv>toolchain_home</span><span class=si>}</span><span class=s2>/lib/gcc/</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>-linux-gnu/specs&#34;</span>
 </span></span></code></pre></td></tr></table></div></div><h2 id=validation-1>Validation</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
 </span><span class=lnt> 2
@@ -689,7 +689,7 @@ replaced by step <code>#6</code>.</li></ul><ol start=5><li>Build stage2 cross GC
 </span></span><span class=line><span class=cl>$ relocate --overwrite /root/toolchain g++
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>$ patchelf --print-rpath g++
-</span></span><span class=line><span class=cl><span class=nv>$ORIGIN</span>:<span class=nv>$ORIGIN</span>/lib:<span class=nv>$ORIGIN</span>/lib64:<span class=nv>$ORIGIN</span>/../lib:<span class=nv>$ORIGIN</span>/../lib64:/root/toolchain/lib
+</span></span><span class=line><span class=cl>/root/toolchain/lib:<span class=nv>$ORIGIN</span>:<span class=nv>$ORIGIN</span>/lib64:<span class=nv>$ORIGIN</span>/lib:<span class=nv>$ORIGIN</span>/../lib64:<span class=nv>$ORIGIN</span>/../lib
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl>$ patchelf --print-interpreter g++
 </span></span><span class=line><span class=cl>/root/toolchain/lib/ld-linux-x86-64.so.2
@@ -952,7 +952,7 @@ replaced by step <code>#6</code>.</li></ul><ol start=5><li>Build stage2 cross GC
 </span></span></code></pre></td></tr></table></div></div><h1 id=references>References</h1><ol><li><a href=https://preshing.com/20141119/how-to-build-a-gcc-cross-compiler/>How to Build a GCC Cross-Compiler</a></li></ol></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
 <span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
 <span class=item-content>2024-10-30
-<a href=https://github.com/adonis0147/adonis0147.github.io/commit/dff04746b67a4abee6d1e7b60cfccd08ba19e15e title="Update a post: portable-gcc-toolchain.md">(dff0474)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/gcc/>GCC</a>
+<a href=https://github.com/adonis0147/adonis0147.github.io/commit/ee8942715fbd0eb5976ae8bafd67861391b3deb9 title="Update a post: portable-gcc-toolchain.md">(ee89427)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/gcc/>GCC</a>
 <a href=/tags/x86-64/>x86-64</a>
 <a href=/tags/aarch64/>aarch64</a></div><nav class=post-nav><a class=prev href=/post/qemu-socket-vmnet/><i class="iconfont icon-left"></i>
 <span class="prev-text nav-default">Set QEMU Networking up on macOS by socket_vmnet</span>
