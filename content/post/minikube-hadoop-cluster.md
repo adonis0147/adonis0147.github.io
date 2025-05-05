@@ -14,6 +14,8 @@ This post is a guide to deploy a Hadoop cluster by minikube.
 
 ## Prerequisite
 
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/)
+
 ```shell
 $ brew install qemu socket_vmnet helm kubectl
 ```
