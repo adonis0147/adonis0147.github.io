@@ -246,6 +246,12 @@ $ ./bin/run-example org.apache.spark.examples.SparkPi 10000
 25/05/16 16:34:14 INFO YarnClientImpl: Submitted application application_1747383152432_0004
 25/05/16 16:34:15 INFO Client: Application report for application_1747383152432_0004 (state: ACCEPTED)
 ...
+
+# Check logs on historyserver
+Log Type: stdout
+Log Upload Time: Fri May 16 08:34:39 +0000 2025
+Log Length: 33
+Pi is roughly 3.1416564911416565
 ```
 
 # Reference
