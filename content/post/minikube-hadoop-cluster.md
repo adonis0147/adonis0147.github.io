@@ -182,6 +182,72 @@ Found 2 items
 -rw-r--r--   3 root supergroup       5890 2025-05-05 11:29 /output/part-r-00000
 ```
 
+## Spark SparkPi
+
+```shell
+# Download Apache Spark
+$ curl -LO 'https://archive.apache.org/dist/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz'
+$ tar -zxvf spark-3.5.5-bin-hadoop3.tgz
+
+# Set Hadoop client up
+$ cd spark-3.5.5-bin-hadoop3
+$ SPARK_HOME="$(pwd)"
+
+$ mkdir -p conf/hadoop
+$ kubectl get configmaps hdfs-conf -o jsonpath="{.data.core-site\.xml}" \
+    >conf/hadoop/core-site.xml
+$ kubectl get configmaps hdfs-conf -o jsonpath="{.data.hdfs-site\.xml}" \
+    >conf/hadoop/hdfs-site.xml
+$ kubectl get configmaps yarn-conf -o jsonpath="{.data.yarn-site\.xml}" \
+    >conf/hadoop/yarn-site.xml
+
+# Set Spark up
+$ cat >conf/spark-defaults.conf <<EOF
+spark.master                  yarn
+spark.submit.deployMode       cluster
+
+spark.eventLog.enabled        true
+spark.eventLog.dir            hdfs:///tmp/spark-events
+spark.history.fs.logDirectory hdfs:///tmp/spark-events
+EOF
+
+$ cat >conf/spark-env.sh <<EOF
+HADOOP_CONF_DIR="${SPARK_HOME}/conf/hadoop"
+YARN_CONF_DIR="${SPARK_HOME}/conf/hadoop"
+HADOOP_USER_NAME='root'
+EOF
+
+# Run SparkPi
+$ kubectl exec -it nn-0 -- hadoop fs -mkdir -p /tmp/spark-events
+
+$ ./bin/run-example org.apache.spark.examples.SparkPi 10000
+
+25/05/16 16:34:09 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+25/05/16 16:34:09 INFO DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at rm-0.resourcemanager.default.svc.cluster.local/10.244.0.4:8032
+25/05/16 16:34:10 INFO Configuration: resource-types.xml not found
+25/05/16 16:34:10 INFO ResourceUtils: Unable to find 'resource-types.xml'.
+25/05/16 16:34:10 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster (8192 MB per container)
+25/05/16 16:34:10 INFO Client: Will allocate AM container, with 1408 MB memory including 384 MB overhead
+25/05/16 16:34:10 INFO Client: Setting up container launch context for our AM
+25/05/16 16:34:10 INFO Client: Setting up the launch environment for our AM container
+25/05/16 16:34:10 INFO Client: Preparing resources for our AM container
+25/05/16 16:34:10 WARN Client: Neither spark.yarn.jars nor spark.yarn.archive is set, falling back to uploading libraries under SPARK_HOME.
+25/05/16 16:34:13 INFO Client: Uploading resource file:/private/var/folders/pq/ffp2x74d7gs2_y_z5v7q4dn00000gp/T/spark-5e05a1af-feba-4e50-a0ec-e05c0be847a7/__spark_libs__18048069634091976738.zip -> hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/__spark_libs__18048069634091976738.zip
+25/05/16 16:34:14 INFO Client: Uploading resource file:/spark-3.5.5-bin-hadoop3/examples/jars/spark-examples_2.12-3.5.5.jar -> hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/spark-examples_2.12-3.5.5.jar
+25/05/16 16:34:14 INFO Client: Uploading resource file:/spark-3.5.5-bin-hadoop3/examples/jars/scopt_2.12-3.7.1.jar -> hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/scopt_2.12-3.7.1.jar
+25/05/16 16:34:14 WARN Client: Same name resource file:///spark-3.5.5-bin-hadoop3/examples/jars/spark-examples_2.12-3.5.5.jar added multiple times to distributed cache
+25/05/16 16:34:14 INFO Client: Uploading resource file:/private/var/folders/pq/ffp2x74d7gs2_y_z5v7q4dn00000gp/T/spark-5e05a1af-feba-4e50-a0ec-e05c0be847a7/__spark_conf__8161596058161130912.zip -> hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/__spark_conf__.zip
+25/05/16 16:34:14 INFO SecurityManager: Changing view acls to: adonis,root
+25/05/16 16:34:14 INFO SecurityManager: Changing modify acls to: adonis,root
+25/05/16 16:34:14 INFO SecurityManager: Changing view acls groups to:
+25/05/16 16:34:14 INFO SecurityManager: Changing modify acls groups to:
+25/05/16 16:34:14 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: adonis, root; groups with view permissions: EMPTY; users with modify permissions: adonis, root; groups with modify permissions: EMPTY
+25/05/16 16:34:14 INFO Client: Submitting application application_1747383152432_0004 to ResourceManager
+25/05/16 16:34:14 INFO YarnClientImpl: Submitted application application_1747383152432_0004
+25/05/16 16:34:15 INFO Client: Application report for application_1747383152432_0004 (state: ACCEPTED)
+...
+```
+
 # Reference
 
 - [Accessing services in minikube via DNS](https://www.andreasgerstmayr.at/2022/11/23/accessing-services-in-minikube-via-dns.html)
