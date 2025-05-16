@@ -1,7 +1,7 @@
 <!doctype html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><title>Deploy a Hadoop Cluster by Minikube - Adonis's Blog</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4766287755536875" crossorigin=anonymous></script><meta name=renderer content="webkit"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv=Cache-Control content="no-transform"><meta http-equiv=Cache-Control content="no-siteapp"><meta name=theme-color content="#f8f5ec"><meta name=msapplication-navbutton-color content="#f8f5ec"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec"><meta name=author content="Adonis Ling"><meta name=description content="A guide to deploy a Hadoop cluster by minikube."><meta name=keywords content="Hugo,theme,even"><meta name=google-site-verification content="wQt7gqY6LP89EIyhTiHFzJJz6g0GVV-jFNLam6Qofa8"><meta name=generator content="Hugo 0.131.0 with theme even"><link rel=canonical href=https://adonis0147.github.io/post/minikube-hadoop-cluster/><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=manifest href=/manifest.json><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><link href=/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css rel=stylesheet><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin=anonymous><meta property="og:url" content="https://adonis0147.github.io/post/minikube-hadoop-cluster/"><meta property="og:site_name" content="Adonis's Blog"><meta property="og:title" content="Deploy a Hadoop Cluster by Minikube"><meta property="og:description" content="A guide to deploy a Hadoop cluster by minikube."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="post"><meta property="article:published_time" content="2025-05-05T17:48:50+08:00"><meta property="article:modified_time" content="2025-05-05T19:47:15+08:00"><meta property="article:tag" content="Hadoop"><meta property="article:tag" content="Kubernetes"><meta property="article:tag" content="Minikube"><meta property="article:tag" content="Helm"><meta itemprop=name content="Deploy a Hadoop Cluster by Minikube"><meta itemprop=description content="A guide to deploy a Hadoop cluster by minikube."><meta itemprop=datePublished content="2025-05-05T17:48:50+08:00"><meta itemprop=dateModified content="2025-05-05T19:47:15+08:00"><meta itemprop=wordCount content="725"><meta itemprop=keywords content="Hadoop,Kubernetes,Minikube,Helm"><meta name=twitter:card content="summary"><meta name=twitter:title content="Deploy a Hadoop Cluster by Minikube"><meta name=twitter:description content="A guide to deploy a Hadoop cluster by minikube."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script><script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]--></head><body><div id=mobile-navbar class=mobile-navbar><div class=mobile-header-logo><a href=/ class=logo>Adonis's Blog</a></div><div class=mobile-navbar-icon><span></span>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4766287755536875" crossorigin=anonymous></script><meta name=renderer content="webkit"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1"><meta http-equiv=Cache-Control content="no-transform"><meta http-equiv=Cache-Control content="no-siteapp"><meta name=theme-color content="#f8f5ec"><meta name=msapplication-navbutton-color content="#f8f5ec"><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="#f8f5ec"><meta name=author content="Adonis Ling"><meta name=description content="A guide to deploy a Hadoop cluster by minikube."><meta name=keywords content="Hugo,theme,even"><meta name=google-site-verification content="wQt7gqY6LP89EIyhTiHFzJJz6g0GVV-jFNLam6Qofa8"><meta name=generator content="Hugo 0.131.0 with theme even"><link rel=canonical href=https://adonis0147.github.io/post/minikube-hadoop-cluster/><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=manifest href=/manifest.json><link rel=mask-icon href=/safari-pinned-tab.svg color=#5bbad5><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><link href=/sass/main.min.f92fd13721ddf72129410fd8250e73152cc6f2438082b6c0208dc24ee7c13fc4.css rel=stylesheet><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.1.20/dist/jquery.fancybox.min.css integrity="sha256-7TyXnr2YU040zfSP+rEcz29ggW4j56/ujTPwjMzyqFY=" crossorigin=anonymous><meta property="og:url" content="https://adonis0147.github.io/post/minikube-hadoop-cluster/"><meta property="og:site_name" content="Adonis's Blog"><meta property="og:title" content="Deploy a Hadoop Cluster by Minikube"><meta property="og:description" content="A guide to deploy a Hadoop cluster by minikube."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="post"><meta property="article:published_time" content="2025-05-05T17:48:50+08:00"><meta property="article:modified_time" content="2025-05-16T16:40:20+08:00"><meta property="article:tag" content="Hadoop"><meta property="article:tag" content="Kubernetes"><meta property="article:tag" content="Minikube"><meta property="article:tag" content="Helm"><meta itemprop=name content="Deploy a Hadoop Cluster by Minikube"><meta itemprop=description content="A guide to deploy a Hadoop cluster by minikube."><meta itemprop=datePublished content="2025-05-05T17:48:50+08:00"><meta itemprop=dateModified content="2025-05-16T16:40:20+08:00"><meta itemprop=wordCount content="1163"><meta itemprop=keywords content="Hadoop,Kubernetes,Minikube,Helm"><meta name=twitter:card content="summary"><meta name=twitter:title content="Deploy a Hadoop Cluster by Minikube"><meta name=twitter:description content="A guide to deploy a Hadoop cluster by minikube."><!--[if lte IE 9]><script src=https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js></script><![endif]--><!--[if lt IE 9]><script src=https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js></script><script src=https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js></script><![endif]--></head><body><div id=mobile-navbar class=mobile-navbar><div class=mobile-header-logo><a href=/ class=logo>Adonis's Blog</a></div><div class=mobile-navbar-icon><span></span>
 <span></span>
-<span></span></div></div><nav id=mobile-menu class="mobile-menu slideout-menu"><ul class=mobile-menu-list><a href=/><li class=mobile-menu-item>Home</li></a><a href=/post/><li class=mobile-menu-item>Archives</li></a><a href=/tags/><li class=mobile-menu-item>Tags</li></a><a href=/categories/><li class=mobile-menu-item>Categories</li></a></ul></nav><div class=container id=mobile-panel><header id=header class=header><div class=logo-wrapper><a href=/ class=logo>Adonis's Blog</a></div><nav class=site-navbar><ul id=menu class=menu><li class=menu-item><a class=menu-item-link href=/>Home</a></li><li class=menu-item><a class=menu-item-link href=/post/>Archives</a></li><li class=menu-item><a class=menu-item-link href=/tags/>Tags</a></li><li class=menu-item><a class=menu-item-link href=/categories/>Categories</a></li></ul></nav></header><main id=main class=main><div class=content-wrapper><div id=content class=content><article class=post><header class=post-header><h1 class=post-title>Deploy a Hadoop Cluster by Minikube</h1><div class=post-meta><span class=post-time>2025-05-05</span><div class=post-category><a href=/categories/english/>English</a></div><span class=more-meta>725 words </span><span class=more-meta>4 mins read </span><span id=busuanzi_container_page_pv class=more-meta><span id=busuanzi_value_page_pv><img src=/img/spinner.svg alt=spinner.svg></span> times read</span></div></header><div class=post-toc id=post-toc><h2 class=post-toc-title>Contents</h2><div class="post-toc-content always-active"><nav id=TableOfContents><ul><li><a href=#macos>macOS</a><ul><li><a href=#prerequisite>Prerequisite</a></li><li><a href=#start-minikube>Start Minikube</a></li></ul></li><li><a href=#ubuntu-2404>Ubuntu 24.04</a><ul><li><a href=#prerequisite-1>Prerequisite</a></li><li><a href=#start-minikube-1>Start Minikube</a></li></ul></li><li><a href=#install-hadoop-cluster-by-helm>Install Hadoop Cluster by Helm</a></li><li><a href=#check-the-status-of-hadoop-cluster>Check the Status of Hadoop Cluster</a></li><li><a href=#access-the-services>Access the services</a><ul><li><a href=#macos-1>macOS</a></li><li><a href=#ubuntu-2404-1>Ubuntu 24.04</a></li></ul></li><li><a href=#test>Test</a><ul><li><a href=#ping>Ping</a></li><li><a href=#access-hdfs>Access HDFS</a></li><li><a href=#mapreduce-wordcount>MapReduce Wordcount</a></li></ul></li><li><a href=#reference>Reference</a></li></ul></nav></div></div><div class=post-content><p>This post is a guide to deploy a Hadoop cluster by minikube.</p><h1 id=macos>macOS</h1><h2 id=prerequisite>Prerequisite</h2><ul><li><a href=https://docs.docker.com/desktop/setup/install/mac-install/>Docker Desktop</a></li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span></span></div></div><nav id=mobile-menu class="mobile-menu slideout-menu"><ul class=mobile-menu-list><a href=/><li class=mobile-menu-item>Home</li></a><a href=/post/><li class=mobile-menu-item>Archives</li></a><a href=/tags/><li class=mobile-menu-item>Tags</li></a><a href=/categories/><li class=mobile-menu-item>Categories</li></a></ul></nav><div class=container id=mobile-panel><header id=header class=header><div class=logo-wrapper><a href=/ class=logo>Adonis's Blog</a></div><nav class=site-navbar><ul id=menu class=menu><li class=menu-item><a class=menu-item-link href=/>Home</a></li><li class=menu-item><a class=menu-item-link href=/post/>Archives</a></li><li class=menu-item><a class=menu-item-link href=/tags/>Tags</a></li><li class=menu-item><a class=menu-item-link href=/categories/>Categories</a></li></ul></nav></header><main id=main class=main><div class=content-wrapper><div id=content class=content><article class=post><header class=post-header><h1 class=post-title>Deploy a Hadoop Cluster by Minikube</h1><div class=post-meta><span class=post-time>2025-05-05</span><div class=post-category><a href=/categories/english/>English</a></div><span class=more-meta>1163 words </span><span class=more-meta>6 mins read </span><span id=busuanzi_container_page_pv class=more-meta><span id=busuanzi_value_page_pv><img src=/img/spinner.svg alt=spinner.svg></span> times read</span></div></header><div class=post-toc id=post-toc><h2 class=post-toc-title>Contents</h2><div class="post-toc-content always-active"><nav id=TableOfContents><ul><li><a href=#macos>macOS</a><ul><li><a href=#prerequisite>Prerequisite</a></li><li><a href=#start-minikube>Start Minikube</a></li></ul></li><li><a href=#ubuntu-2404>Ubuntu 24.04</a><ul><li><a href=#prerequisite-1>Prerequisite</a></li><li><a href=#start-minikube-1>Start Minikube</a></li></ul></li><li><a href=#install-hadoop-cluster-by-helm>Install Hadoop Cluster by Helm</a></li><li><a href=#check-the-status-of-hadoop-cluster>Check the Status of Hadoop Cluster</a></li><li><a href=#access-the-services>Access the services</a><ul><li><a href=#macos-1>macOS</a></li><li><a href=#ubuntu-2404-1>Ubuntu 24.04</a></li></ul></li><li><a href=#test>Test</a><ul><li><a href=#ping>Ping</a></li><li><a href=#access-hdfs>Access HDFS</a></li><li><a href=#mapreduce-wordcount>MapReduce Wordcount</a></li><li><a href=#spark-sparkpi>Spark SparkPi</a></li></ul></li><li><a href=#reference>Reference</a></li></ul></nav></div></div><div class=post-content><p>This post is a guide to deploy a Hadoop cluster by minikube.</p><h1 id=macos>macOS</h1><h2 id=prerequisite>Prerequisite</h2><ul><li><a href=https://docs.docker.com/desktop/setup/install/mac-install/>Docker Desktop</a></li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ brew install qemu socket_vmnet helm kubectl
 </span></span></code></pre></td></tr></table></div></div><h2 id=start-minikube>Start Minikube</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
@@ -189,10 +189,132 @@
 </span></span><span class=line><span class=cl>Found <span class=m>2</span> items
 </span></span><span class=line><span class=cl>-rw-r--r--   <span class=m>3</span> root supergroup          <span class=m>0</span> 2025-05-05 11:29 /output/_SUCCESS
 </span></span><span class=line><span class=cl>-rw-r--r--   <span class=m>3</span> root supergroup       <span class=m>5890</span> 2025-05-05 11:29 /output/part-r-00000
+</span></span></code></pre></td></tr></table></div></div><h2 id=spark-sparkpi>Spark SparkPi</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># Download Apache Spark</span>
+</span></span><span class=line><span class=cl>$ curl -LO <span class=s1>&#39;https://archive.apache.org/dist/spark/spark-3.5.5/spark-3.5.5-bin-hadoop3.tgz&#39;</span>
+</span></span><span class=line><span class=cl>$ tar -zxvf spark-3.5.5-bin-hadoop3.tgz
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Set Hadoop client up</span>
+</span></span><span class=line><span class=cl>$ <span class=nb>cd</span> spark-3.5.5-bin-hadoop3
+</span></span><span class=line><span class=cl>$ <span class=nv>SPARK_HOME</span><span class=o>=</span><span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ mkdir -p conf/hadoop
+</span></span><span class=line><span class=cl>$ kubectl get configmaps hdfs-conf -o <span class=nv>jsonpath</span><span class=o>=</span><span class=s2>&#34;{.data.core-site\.xml}&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    &gt;conf/hadoop/core-site.xml
+</span></span><span class=line><span class=cl>$ kubectl get configmaps hdfs-conf -o <span class=nv>jsonpath</span><span class=o>=</span><span class=s2>&#34;{.data.hdfs-site\.xml}&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    &gt;conf/hadoop/hdfs-site.xml
+</span></span><span class=line><span class=cl>$ kubectl get configmaps yarn-conf -o <span class=nv>jsonpath</span><span class=o>=</span><span class=s2>&#34;{.data.yarn-site\.xml}&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    &gt;conf/hadoop/yarn-site.xml
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Set Spark up</span>
+</span></span><span class=line><span class=cl>$ cat &gt;conf/spark-defaults.conf <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>spark.master                  yarn
+</span></span></span><span class=line><span class=cl><span class=s>spark.submit.deployMode       cluster
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>spark.eventLog.enabled        true
+</span></span></span><span class=line><span class=cl><span class=s>spark.eventLog.dir            hdfs:///tmp/spark-events
+</span></span></span><span class=line><span class=cl><span class=s>spark.history.fs.logDirectory hdfs:///tmp/spark-events
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ cat &gt;conf/spark-env.sh <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>HADOOP_CONF_DIR=&#34;${SPARK_HOME}/conf/hadoop&#34;
+</span></span></span><span class=line><span class=cl><span class=s>YARN_CONF_DIR=&#34;${SPARK_HOME}/conf/hadoop&#34;
+</span></span></span><span class=line><span class=cl><span class=s>HADOOP_USER_NAME=&#39;root&#39;
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Run SparkPi</span>
+</span></span><span class=line><span class=cl>$ kubectl <span class=nb>exec</span> -it nn-0 -- hadoop fs -mkdir -p /tmp/spark-events
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ./bin/run-example org.apache.spark.examples.SparkPi <span class=m>10000</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>25/05/16 16:34:09 WARN NativeCodeLoader: Unable to load native-hadoop library <span class=k>for</span> your platform... using builtin-java classes where applicable
+</span></span><span class=line><span class=cl>25/05/16 16:34:09 INFO DefaultNoHARMFailoverProxyProvider: Connecting to ResourceManager at rm-0.resourcemanager.default.svc.cluster.local/10.244.0.4:8032
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Configuration: resource-types.xml not found
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO ResourceUtils: Unable to find <span class=s1>&#39;resource-types.xml&#39;</span>.
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster <span class=o>(</span><span class=m>8192</span> MB per container<span class=o>)</span>
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Client: Will allocate AM container, with <span class=m>1408</span> MB memory including <span class=m>384</span> MB overhead
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Client: Setting up container launch context <span class=k>for</span> our AM
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Client: Setting up the launch environment <span class=k>for</span> our AM container
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 INFO Client: Preparing resources <span class=k>for</span> our AM container
+</span></span><span class=line><span class=cl>25/05/16 16:34:10 WARN Client: Neither spark.yarn.jars nor spark.yarn.archive is set, falling back to uploading libraries under SPARK_HOME.
+</span></span><span class=line><span class=cl>25/05/16 16:34:13 INFO Client: Uploading resource file:/private/var/folders/pq/ffp2x74d7gs2_y_z5v7q4dn00000gp/T/spark-5e05a1af-feba-4e50-a0ec-e05c0be847a7/__spark_libs__18048069634091976738.zip -&gt; hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/__spark_libs__18048069634091976738.zip
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO Client: Uploading resource file:/spark-3.5.5-bin-hadoop3/examples/jars/spark-examples_2.12-3.5.5.jar -&gt; hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/spark-examples_2.12-3.5.5.jar
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO Client: Uploading resource file:/spark-3.5.5-bin-hadoop3/examples/jars/scopt_2.12-3.7.1.jar -&gt; hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/scopt_2.12-3.7.1.jar
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 WARN Client: Same name resource file:///spark-3.5.5-bin-hadoop3/examples/jars/spark-examples_2.12-3.5.5.jar added multiple <span class=nb>times</span> to distributed cache
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO Client: Uploading resource file:/private/var/folders/pq/ffp2x74d7gs2_y_z5v7q4dn00000gp/T/spark-5e05a1af-feba-4e50-a0ec-e05c0be847a7/__spark_conf__8161596058161130912.zip -&gt; hdfs://hadoop-cluster/user/root/.sparkStaging/application_1747383152432_0004/__spark_conf__.zip
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO SecurityManager: Changing view acls to: adonis,root
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO SecurityManager: Changing modify acls to: adonis,root
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO SecurityManager: Changing view acls groups to:
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO SecurityManager: Changing modify acls groups to:
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO SecurityManager: SecurityManager: authentication disabled<span class=p>;</span> ui acls disabled<span class=p>;</span> users with view permissions: adonis, root<span class=p>;</span> groups with view permissions: EMPTY<span class=p>;</span> users with modify permissions: adonis, root<span class=p>;</span> groups with modify permissions: EMPTY
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO Client: Submitting application application_1747383152432_0004 to ResourceManager
+</span></span><span class=line><span class=cl>25/05/16 16:34:14 INFO YarnClientImpl: Submitted application application_1747383152432_0004
+</span></span><span class=line><span class=cl>25/05/16 16:34:15 INFO Client: Application report <span class=k>for</span> application_1747383152432_0004 <span class=o>(</span>state: ACCEPTED<span class=o>)</span>
+</span></span><span class=line><span class=cl>...
 </span></span></code></pre></td></tr></table></div></div><h1 id=reference>Reference</h1><ul><li><a href=https://www.andreasgerstmayr.at/2022/11/23/accessing-services-in-minikube-via-dns.html>Accessing services in minikube via DNS</a></li></ul></div><div class=post-copyright><p class=copyright-item><span class=item-title>Author</span>
 <span class=item-content>Adonis Ling</span></p><p class=copyright-item><span class=item-title>LastMod</span>
-<span class=item-content>2025-05-05
-<a href=https://github.com/adonis0147/adonis0147.github.io/commit/6fcafeab5bc7df8b587f3d699d880cf1404a6d1a title="Update a post: minikube-hadoop-cluster.md">(6fcafea)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/hadoop/>Hadoop</a>
+<span class=item-content>2025-05-16
+<a href=https://github.com/adonis0147/adonis0147.github.io/commit/fc627b6583f811b0a7fdef74d828fb15c5704b7a title="Update a post: minikube-hadoop-cluster.md">(fc627b6)</a></span></p></div><footer class=post-footer><div class=post-tags><a href=/tags/hadoop/>Hadoop</a>
 <a href=/tags/kubernetes/>Kubernetes</a>
 <a href=/tags/minikube/>Minikube</a>
 <a href=/tags/helm/>Helm</a></div><nav class=post-nav><a class=next href=/post/squid-https-forward-proxy/><span class="next-text nav-default">Configure Squid as an HTTPS Forward Proxy with Authentication</span>
