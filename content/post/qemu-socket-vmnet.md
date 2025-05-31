@@ -31,8 +31,6 @@ brew install qemu
 # Install socket_vmnet.
 brew install socket_vmnet
 
-# Install the launchd service
-brew tap homebrew/services
 # sudo is necessary for the next line
 sudo brew services start socket_vmnet
 
