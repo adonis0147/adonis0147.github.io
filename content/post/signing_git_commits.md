@@ -11,6 +11,8 @@ This post is a guide to sign Git commits.
 
 # macOS
 
+## Homebrew
+
 1. Install `gnupg` and `pinentry-mac`.
 
     ```shell
@@ -58,6 +60,30 @@ This post is a guide to sign Git commits.
     ```shell
     git log --show-signature -1
     ```
+
+## MacPorts
+
+1. Install `gnupg2` with the `pinentry_mac` variant.
+
+    ```shell
+    sudo port -N install gnupg2 +pinentry_mac
+    ```
+
+2. Follow steps `2` to `5` in the Homebrew section above to generate and add your GPG key to GitHub.
+
+3. Set `pinentry-program` in `~/.gnupg/gpg-agent.conf` to the MacPorts application path, replacing any existing `pinentry-program` line:
+
+    ```text
+    pinentry-program /Applications/MacPorts/pinentry-mac.app/Contents/MacOS/pinentry-mac
+    ```
+
+    Restart `gpg-agent`:
+
+    ```shell
+    killall gpg-agent
+    ```
+
+4. Follow steps `7` and `8` in the Homebrew section above to configure Git and check a commit's signature.
 
 # Ubuntu Server (22.04)
 
