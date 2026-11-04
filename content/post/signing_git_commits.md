@@ -69,6 +69,15 @@ This post is a guide to sign Git commits.
     sudo port -N install gnupg2 +pinentry_mac
     ```
 
+    If MacPorts reports that `pinentry-mac` requires a full Xcode installation, install its prebuilt package first, then retry:
+
+    ```shell
+    sudo port -N -b install pinentry-mac use_xcode=no
+    sudo port -N install gnupg2 +pinentry_mac
+    ```
+
+    `-b` allows binary packages only; `use_xcode=no` bypasses the Xcode check for this installation. This requires an available prebuilt package for your macOS version and architecture. If none is available, install a compatible full Xcode to build `pinentry-mac` from source.
+
 2. Follow steps `2` to `5` in the Homebrew section above to generate and add your GPG key to GitHub.
 
 3. Set `pinentry-program` in `~/.gnupg/gpg-agent.conf` to the MacPorts application path, replacing any existing `pinentry-program` line:
